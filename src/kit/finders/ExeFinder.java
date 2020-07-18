@@ -1,11 +1,13 @@
-package kit;
+package kit.finders;
 
+import kit.Game;
+import kit.ProgressedTask;
 import kit.utils.Logger;
 
 import java.io.File;
 import java.util.List;
 
-public class ExeFinder extends ProgressedTask<Game>{
+public class ExeFinder extends ProgressedTask<Game> {
 
     private final List<Game> games;
     private final File folder;

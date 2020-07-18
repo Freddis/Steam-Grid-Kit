@@ -6,6 +6,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -13,11 +14,13 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import kit.ExeFinder;
+import kit.Config;
+import kit.finders.ExeFinder;
 import kit.Game;
 import kit.utils.FileLoader;
 import kit.utils.JsonHelper;
 import kit.utils.Logger;
+import kit.utils.Progress;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -26,60 +29,48 @@ import java.util.*;
 
 
 public class MainFormController {
-    private Stage stage;
-    private TextArea logTextArea;
+    @FXML
+    private TextArea textAreaLog;
+    @FXML
     private ProgressBar progressBar;
+    @FXML
     private Label labelProgress;
+    @FXML
+    private Button buttonLoadSteamLibrary;
+    @FXML
+    private Button buttonStart;
+    @FXML
+    private TextField textFieldShortcutsFile;
+    @FXML
+    private TextField textFieldGamesDirectory;
+
+    private Stage stage;
     private JSONObject settings;
     private Logger logger;
     private JsonHelper jsonHelper;
+    private Progress progress;
 
     void init(Stage stage) {
         this.stage = stage;
-        this.logTextArea = (TextArea) stage.getScene().lookup("#textareaLog");
-        this.logger = new Logger(this.logTextArea);
+        this.logger = new Logger(this.textAreaLog);
         this.jsonHelper = new JsonHelper(this.logger);
-        this.log("App started");
-        progressBar = (ProgressBar) stage.getScene().lookup("#progressBar");
-        labelProgress = (Label) stage.getScene().lookup("#labelProgress");
-        settings = jsonHelper.readJsonFromFile(this.getPropsJsonFilePath());
-        this.initSettings(settings);
+        progress = new Progress(labelProgress, progressBar, new Button[]{buttonStart, buttonLoadSteamLibrary});
+        logger.log("App started");
+        settings = jsonHelper.readJsonFromFile(Config.getPropsJsonFilePath());
+        this.initControls(settings);
     }
 
-    private void initSettings(JSONObject settings) {
+    private void initControls(JSONObject settings) {
         if (settings.has("vdfFile")) {
-            TextField field = (TextField) stage.getScene().lookup("#textFieldShortcutsFile");
             String val = settings.getString("vdfFile");
-            field.setText(val);
+            textFieldShortcutsFile.setText(val);
         }
         if (settings.has("gamesDirectory")) {
-            TextField field = (TextField) stage.getScene().lookup("#textFieldGamesDirectory");
             String val = settings.getString("gamesDirectory");
-            field.setText(val);
+            textFieldGamesDirectory.setText(val);
         }
     }
 
-    private String getPropsJsonFilePath() {
-        return getJarPath() + "/SteamGridKit.json";
-    }
-
-    private String getSteamLibraryJsonFilePath() {
-        return getJarPath() + "/steam.json";
-    }
-
-    private String getJarPath() {
-        File jarDir = new File(ClassLoader.getSystemClassLoader().getResource(".").getPath());
-        try {
-            String path = jarDir.getCanonicalPath();
-            return path;
-        } catch (IOException e) {
-            return "";
-        }
-    }
-
-    void log(String text) {
-        this.logger.log(text);
-    }
 
     public void selectGamesDirectory(MouseEvent event) {
         System.out.println("Setting games directory");
@@ -87,13 +78,13 @@ public class MainFormController {
         fileChooser.setTitle("Open Resource File");
         File file = fileChooser.showDialog(stage);
         if (file == null) {
-            this.log("Cancelled");
+            logger.log("Cancelled");
             return;
         }
         TextField gamesDirectory = (TextField) stage.getScene().lookup("#textFieldGamesDirectory");
         gamesDirectory.setText(file.getAbsolutePath());
-        this.log("Dir: " + file.getAbsolutePath());
-        this.saveJson();
+        logger.log("Dir: " + file.getAbsolutePath());
+        this.saveConfigJson();
     }
 
     public void selectShortcutFile(MouseEvent event) {
@@ -102,13 +93,13 @@ public class MainFormController {
         fileChooser.setTitle("Open Resource File");
         File file = fileChooser.showOpenDialog(stage);
         if (file == null) {
-            this.log("Cancelled");
+            logger.log("Cancelled");
             return;
         }
         TextField field = (TextField) stage.getScene().lookup("#textFieldShortcutsFile");
         field.setText(file.getAbsolutePath());
-        this.log("File: " + file.getAbsolutePath());
-        this.saveJson();
+        logger.log("File: " + file.getAbsolutePath());
+        this.saveConfigJson();
     }
 
     public void start(MouseEvent event) {
@@ -116,7 +107,7 @@ public class MainFormController {
         TextField gamesDirectory = (TextField) stage.getScene().lookup("#textFieldGamesDirectory");
         File dir = new File(gamesDirectory.getText());
         if (!dir.isDirectory()) {
-            this.log("Path is not a directory");
+            logger.log("Path is not a directory");
         }
 
         TableView tableGames = (TableView) stage.getScene().lookup("#tableGames");
@@ -156,7 +147,7 @@ public class MainFormController {
 
         File[] files = dir.listFiles();
         ArrayList<Game> list = new ArrayList<>();
-        this.log("Found " + files.length + " files");
+        logger.log("Found " + files.length + " files");
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             if (!file.isDirectory()) {
@@ -179,79 +170,41 @@ public class MainFormController {
         tableGames.setItems(data);
     }
 
-    private void saveJson() {
-        this.log("Saving JSON props");
+    private void saveConfigJson() {
+        logger.log("Saving JSON props");
         JSONObject obj = new JSONObject();
         TextField vdfFileField = (TextField) stage.getScene().lookup("#textFieldShortcutsFile");
         obj.put("vdfFile", vdfFileField.getText());
         TextField gamesDirectory = (TextField) stage.getScene().lookup("#textFieldGamesDirectory");
         obj.put("gamesDirectory", gamesDirectory.getText());
-
-       this.jsonHelper.writeJsonToFile(getPropsJsonFilePath(),obj);
+        this.jsonHelper.writeJsonToFile(Config.getPropsJsonFilePath(), obj);
     }
 
     public void loadSteamLibrary() {
-        this.startTask("Loading steam games");
+        progress.startTask("Loading steam games");
         //bigger file without ddos checks for debugging
 //        String url = "https://raw.githubusercontent.com/lutangar/cities.json/master/cities.json";
         String url = "http://api.steampowered.com/ISteamApps/GetAppList/v0002/?format=json";
-        File file = new File(getSteamLibraryJsonFilePath());
+        File file = new File(Config.getSteamLibraryJsonFilePath());
         FileLoader loader = new FileLoader(url, file);
         loader.onFinish((status) -> {
-            endTask();
+            progress.endTask();
             checkSteamLibraryJson();
             return null;
         });
         loader.start((currentProgress) -> {
-            setTaskProgress(currentProgress);
+            progress.setTaskProgress(currentProgress);
             return null;
         });
     }
 
-    private void endTask() {
-        Platform.runLater(() -> {
-            this.toggleControls(true);
-            progressBar.setProgress(0.0);
-            labelProgress.setText("Done");
-        });
-    }
-
-    private void startTask(String taskStatus) {
-        Platform.runLater(() -> {
-            this.toggleControls(false);
-            progressBar.setProgress(0.01);
-            labelProgress.setText(taskStatus);
-        });
-    }
-
-    private void setTaskProgress(double progress) {
-        Platform.runLater(() -> {
-            progressBar.setProgress(progress);
-        });
-    }
-
     private void checkSteamLibraryJson() {
-        JSONObject json = this.jsonHelper.readJsonFromFile(getSteamLibraryJsonFilePath());
+        JSONObject json = this.jsonHelper.readJsonFromFile(Config.getSteamLibraryJsonFilePath());
         if (json.has("applist") && json.getJSONObject("applist").has("apps")) {
             JSONArray apps = json.getJSONObject("applist").getJSONArray("apps");
-            log("Loaded " + apps.length() + " game ids");
+            logger.log("Loaded " + apps.length() + " game ids");
         } else {
-            log("Seems like json is malformed");
+            logger.log("Seems like json is malformed");
         }
     }
-
-    private void toggleControls(boolean state) {
-        String[] selectors = this.getControlSelectors();
-        Platform.runLater(() -> {
-            for (int i = 0; i < selectors.length; i++) {
-                Node control = stage.getScene().lookup(selectors[i]);
-                control.setDisable(!state);
-            }
-        });
-    }
-
-    private String[] getControlSelectors() {
-        return new String[]{"#buttonLoadSteamLibrary"};
-    }
-
 }

@@ -34,7 +34,7 @@
                   </AnchorPane>
                   <AnchorPane SplitPane.resizableWithParent="false">
                      <children>
-                        <TextArea fx:id="textareaLog" prefHeight="138.0" prefWidth="517.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0" />
+                        <TextArea fx:id="textAreaLog" prefHeight="138.0" prefWidth="517.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0" />
                         <ProgressBar fx:id="progressBar" layoutX="14.0" layoutY="29.0" prefHeight="20.0" prefWidth="517.0" progress="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="15.0" />
                         <Label fx:id="labelProgress" layoutX="14.0" layoutY="6.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                      </children>

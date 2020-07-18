@@ -1,4 +1,4 @@
-package kit;
+package kit.vdf;
 
 import java.util.HashMap;
 

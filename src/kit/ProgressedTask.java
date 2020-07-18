@@ -9,7 +9,7 @@ public abstract class ProgressedTask<T> {
 
     private final Logger logger;
 
-    ProgressedTask(Logger logger) {
+    public ProgressedTask(Logger logger) {
         this.logger = logger;
     }
 
