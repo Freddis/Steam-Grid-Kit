@@ -40,6 +40,10 @@ public class MainFormController {
     @FXML
     private Button buttonStart;
     @FXML
+    private Button buttonSelectShortcutsFile;
+    @FXML
+    private Button buttonSelectGamesDirectory;
+    @FXML
     private TextField textFieldShortcutsFile;
     @FXML
     private TextField textFieldGamesDirectory;
@@ -54,7 +58,7 @@ public class MainFormController {
         this.stage = stage;
         this.logger = new Logger(this.textAreaLog);
         this.jsonHelper = new JsonHelper(this.logger);
-        progress = new Progress(labelProgress, progressBar, new Button[]{buttonStart, buttonLoadSteamLibrary});
+        progress = new Progress(labelProgress, progressBar, new Button[]{buttonStart, buttonLoadSteamLibrary, buttonSelectGamesDirectory, buttonSelectShortcutsFile});
         logger.log("App started");
         settings = jsonHelper.readJsonFromFile(Config.getPropsJsonFilePath());
         this.initControls(settings);
@@ -144,6 +148,38 @@ public class MainFormController {
             };
 
         });
+        TableColumn<Game, String> execsCol = (TableColumn<Game, String>) tableGames.getColumns().get(4);
+        execsCol.setCellValueFactory(param -> new ObservableValue<String>() {
+            @Override
+            public void addListener(InvalidationListener listener) {
+
+            }
+
+            @Override
+            public void removeListener(InvalidationListener listener) {
+
+            }
+
+            @Override
+            public void addListener(ChangeListener<? super String> listener) {
+
+            }
+
+            @Override
+            public void removeListener(ChangeListener<? super String> listener) {
+
+            }
+
+            @Override
+            public String getValue() {
+                String result = "";
+                ArrayList<String> files = param.getValue().getExecs();
+                for (int i = 0; i < files.size(); i++) {
+                    result += files.get(i) + "\n";
+                }
+                return result;
+            }
+        });
 
         File[] files = dir.listFiles();
         ArrayList<Game> list = new ArrayList<>();
@@ -155,19 +191,22 @@ public class MainFormController {
             }
             list.add(new Game(file.getName()));
         }
+        ObservableList<Game> data = FXCollections.observableList(list);
+        tableGames.setItems(data);
 
         ExeFinder finder = new ExeFinder(this.logger, list, dir);
-        this.labelProgress.setText("Searching exe files");
-        this.progressBar.setProgress(0);
+        this.progress.startTask("Searching exe files");
+        finder.onFinish((status) -> {
+            progress.endTask();
+            return null;
+        });
         finder.start(progress -> {
-            Platform.runLater(() -> {
-                this.progressBar.setProgress(progress);
-            });
+            this.progress.setTaskProgress(progress);
+            tableGames.refresh();
             return null;
         });
 
-        ObservableList<Game> data = FXCollections.observableList(list);
-        tableGames.setItems(data);
+
     }
 
     private void saveConfigJson() {
