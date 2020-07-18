@@ -1,0 +1,7 @@
+.container {
+    -fx-background-color: aqua;
+    -fx-padding: 20px;
+}
+.label {
+    -fx-text-fill: brown;
+}
