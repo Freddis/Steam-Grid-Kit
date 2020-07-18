@@ -1,6 +1,5 @@
 package views.options;
 
-import com.sun.scenario.Settings;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.MouseEvent;

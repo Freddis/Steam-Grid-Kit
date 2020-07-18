@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="SteamGridKit">
+    <output-path>$PROJECT_DIR$/out/artifacts/SteamGridKit</output-path>
+    <root id="archive" name="SteamGridKit.jar">
+      <element id="module-output" name="SteamGridKit" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/json-20200518.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
