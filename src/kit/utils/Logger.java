@@ -1,4 +1,4 @@
-package kit;
+package kit.utils;
 
 import javafx.application.Platform;
 import javafx.scene.control.TextArea;

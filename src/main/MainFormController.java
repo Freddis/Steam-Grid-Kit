@@ -1,6 +1,9 @@
 package main;
 
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -10,16 +13,15 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import kit.ExeFinder;
 import kit.Game;
-import kit.Logger;
+import kit.utils.FileLoader;
+import kit.utils.JsonHelper;
+import kit.utils.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 
@@ -30,33 +32,20 @@ public class MainFormController {
     private Label labelProgress;
     private JSONObject settings;
     private Logger logger;
+    private JsonHelper jsonHelper;
 
     void init(Stage stage) {
         this.stage = stage;
         this.logTextArea = (TextArea) stage.getScene().lookup("#textareaLog");
         this.logger = new Logger(this.logTextArea);
+        this.jsonHelper = new JsonHelper(this.logger);
         this.log("App started");
         progressBar = (ProgressBar) stage.getScene().lookup("#progressBar");
         labelProgress = (Label) stage.getScene().lookup("#labelProgress");
-        settings = this.readJsonFromFile(this.getPropsJsonFilePath());
+        settings = jsonHelper.readJsonFromFile(this.getPropsJsonFilePath());
         this.initSettings(settings);
     }
 
-    private JSONObject readJsonFromFile(String path) {
-        this.log("Loading data from file " + path);
-        String propsPath = this.getPropsJsonFilePath();
-        File json = new File(propsPath);
-        String content = null;
-        try {
-            content = new String(Files.readAllBytes(Paths.get(json.toURI())));
-        } catch (IOException e) {
-            this.log("Can't read file: " + path);
-            e.printStackTrace();
-        }
-        JSONObject root = content != null ? new JSONObject(content) : new JSONObject();
-        return root;
-
-    }
     private void initSettings(JSONObject settings) {
         if (settings.has("vdfFile")) {
             TextField field = (TextField) stage.getScene().lookup("#textFieldShortcutsFile");
@@ -131,8 +120,39 @@ public class MainFormController {
         }
 
         TableView tableGames = (TableView) stage.getScene().lookup("#tableGames");
-        TableColumn<Game, String> directoryCol = (TableColumn<Game, String>) tableGames.getColumns().get(0);
+        TableColumn<Game, String> directoryCol = (TableColumn<Game, String>) tableGames.getColumns().get(1);
         directoryCol.setCellValueFactory(new PropertyValueFactory<>("directory"));
+        TableColumn<Game, String> numberCol = (TableColumn<Game, String>) tableGames.getColumns().get(0);
+        numberCol.setCellValueFactory(param -> {
+            int number = tableGames.getItems().indexOf(param.getValue()) + 1;
+            return new ObservableValue<String>() {
+                @Override
+                public void addListener(InvalidationListener listener) {
+
+                }
+
+                @Override
+                public void removeListener(InvalidationListener listener) {
+
+                }
+
+                @Override
+                public void addListener(ChangeListener<? super String> listener) {
+
+                }
+
+                @Override
+                public void removeListener(ChangeListener<? super String> listener) {
+
+                }
+
+                @Override
+                public String getValue() {
+                    return String.valueOf(number);
+                }
+            };
+
+        });
 
         File[] files = dir.listFiles();
         ArrayList<Game> list = new ArrayList<>();
@@ -144,6 +164,17 @@ public class MainFormController {
             }
             list.add(new Game(file.getName()));
         }
+
+        ExeFinder finder = new ExeFinder(this.logger, list, dir);
+        this.labelProgress.setText("Searching exe files");
+        this.progressBar.setProgress(0);
+        finder.start(progress -> {
+            Platform.runLater(() -> {
+                this.progressBar.setProgress(progress);
+            });
+            return null;
+        });
+
         ObservableList<Game> data = FXCollections.observableList(list);
         tableGames.setItems(data);
     }
@@ -156,98 +187,57 @@ public class MainFormController {
         TextField gamesDirectory = (TextField) stage.getScene().lookup("#textFieldGamesDirectory");
         obj.put("gamesDirectory", gamesDirectory.getText());
 
-        String output = obj.toString();
-        //works bad in IDE, working dir is the project root
-//        String currentPath = new File(".").getAbsolutePath();
-        File jarDir = new File(ClassLoader.getSystemClassLoader().getResource(".").getPath());
-        try {
-            PrintWriter writer = new PrintWriter(jarDir + "/SteamGridKit.json", "UTF-8");
-            writer.write(output);
-            writer.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+       this.jsonHelper.writeJsonToFile(getPropsJsonFilePath(),obj);
     }
 
     public void loadSteamLibrary() {
-        this.toggleControls(false);
-        ProgressBar progressBar = (ProgressBar) stage.getScene().lookup("#progressBar");
-        progressBar.setProgress(0.05);
-        labelProgress.setText("Loading steam games...");
-
-        Thread thread = new Thread(() -> {
-            try {
-                URL url = new URL("http://api.steampowered.com/ISteamApps/GetAppList/v0002/?format=json");
-                //bigger file without ddos checks for debugging
-//                URL url = new URL("https://raw.githubusercontent.com/lutangar/cities.json/master/cities.json");
-                HttpURLConnection httpConnection = (HttpURLConnection) (url.openConnection());
-
-                //No luck with Steam
-//                    int completeFileSize = httpConnection.getContentLength();
-                float averageFileSizeMb = (float) 5.3;
-                int completeFileSize = (int) (averageFileSizeMb * 1024 * 1024);
-                BufferedInputStream in = new BufferedInputStream(httpConnection.getInputStream());
-                FileOutputStream fos = new FileOutputStream(getSteamLibraryJsonFilePath());
-                int bufferSize = 1024 * 100;
-                BufferedOutputStream bout = new BufferedOutputStream(fos, bufferSize);
-                byte[] data = new byte[bufferSize];
-                int downloadedFileSize = 0;
-                int x = 0;
-                double currentProgress = 0;
-                while ((x = in.read(data, 0, bufferSize)) >= 0) {
-                    downloadedFileSize += x;
-                    // calculate progress
-                    currentProgress = (double) downloadedFileSize / (double) completeFileSize;
-                    double finalCurrentProgress = currentProgress;
-                    Platform.runLater(() -> {
-//                        log(finalCurrentProgress + "");
-                        progressBar.setProgress(finalCurrentProgress);
-                    });
-                    bout.write(data, 0, x);
-                }
-                bout.close();
-                in.close();
-                Platform.runLater(() -> {
-                    progressBar.setProgress(1.0);
-                    toggleControls(true);
-                    log("Response loaded");
-                    this.labelProgress.setText("");
-                    this.checkSteamLibraryJson();
-                });
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        this.startTask("Loading steam games");
+        //bigger file without ddos checks for debugging
+//        String url = "https://raw.githubusercontent.com/lutangar/cities.json/master/cities.json";
+        String url = "http://api.steampowered.com/ISteamApps/GetAppList/v0002/?format=json";
+        File file = new File(getSteamLibraryJsonFilePath());
+        FileLoader loader = new FileLoader(url, file);
+        loader.onFinish((status) -> {
+            endTask();
+            checkSteamLibraryJson();
+            return null;
         });
-        thread.start();
+        loader.start((currentProgress) -> {
+            setTaskProgress(currentProgress);
+            return null;
+        });
+    }
+
+    private void endTask() {
+        Platform.runLater(() -> {
+            this.toggleControls(true);
+            progressBar.setProgress(0.0);
+            labelProgress.setText("Done");
+        });
+    }
+
+    private void startTask(String taskStatus) {
+        Platform.runLater(() -> {
+            this.toggleControls(false);
+            progressBar.setProgress(0.01);
+            labelProgress.setText(taskStatus);
+        });
+    }
+
+    private void setTaskProgress(double progress) {
+        Platform.runLater(() -> {
+            progressBar.setProgress(progress);
+        });
     }
 
     private void checkSteamLibraryJson() {
-        JSONObject json = this.getSteamLibraryJson();
-        if(json.has("applist") && json.getJSONObject("applist").has("apps"))
-        {
+        JSONObject json = this.jsonHelper.readJsonFromFile(getSteamLibraryJsonFilePath());
+        if (json.has("applist") && json.getJSONObject("applist").has("apps")) {
             JSONArray apps = json.getJSONObject("applist").getJSONArray("apps");
             log("Loaded " + apps.length() + " game ids");
-        }
-        else {
+        } else {
             log("Seems like json is malformed");
         }
-    }
-
-    private JSONObject getSteamLibraryJson() {
-        String path = this.getSteamLibraryJsonFilePath();
-        File json = new File(path);
-        try {
-            String content = new String(Files.readAllBytes(Paths.get(json.toURI())));
-            JSONObject root = new JSONObject(content);
-            return root;
-        } catch (FileNotFoundException e) {
-            this.log("File not found at: " + path);
-        } catch (IOException e) {
-            this.log("Couldn't read file: " + path);
-        }
-        return  new JSONObject();
     }
 
     private void toggleControls(boolean state) {
