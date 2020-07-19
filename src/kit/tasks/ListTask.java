@@ -3,19 +3,22 @@ package kit.tasks;
 import javafx.util.Callback;
 import kit.interfaces.ITask;
 import kit.utils.Logger;
+
 import java.util.List;
+import java.util.function.Consumer;
 
 public abstract class ListTask<T> implements ITask {
 
-    private Callback<Boolean, Void> finishCallback;
+    private Consumer<Boolean> finishCallback;
     protected final Logger logger;
 
     public ListTask(Logger logger) {
         this.logger = logger;
-        this.finishCallback = param -> null;
+        this.finishCallback = a -> {
+        };
     }
 
-    public void start(Callback<Double, Void> tickCallback) {
+    public void start(Consumer<Double> tickCallback) {
         Thread thread = new Thread(() -> {
             List<T> list = this.getList();
             for (int i = 0; i < list.size(); i++) {
@@ -24,18 +27,17 @@ public abstract class ListTask<T> implements ITask {
                     result = this.process(list.get(i));
                 } catch (Exception e) {
                     this.logger.log(e.getMessage());
-                    this.finishCallback.call(false);
+                    this.finishCallback.accept(false);
                     return;
                 }
                 if (!result) {
-                    this.finishCallback.call(false);
+                    this.finishCallback.accept(false);
                     return;
                 }
-
                 double progress = ((double) (i + 1)) / list.size();
-                tickCallback.call(progress);
+                tickCallback.accept(progress);
             }
-            this.finishCallback.call(true);
+            this.finishCallback.accept(true);
         });
         thread.setDaemon(true);
         thread.start();
@@ -49,7 +51,7 @@ public abstract class ListTask<T> implements ITask {
         logger.log(error);
     }
 
-    public void onFinish(Callback<Boolean, Void> finishCallback) {
+    public void onFinish(Consumer<Boolean> finishCallback) {
         this.finishCallback = finishCallback;
     }
 

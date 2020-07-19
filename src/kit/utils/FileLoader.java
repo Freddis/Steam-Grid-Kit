@@ -1,10 +1,10 @@
 package kit.utils;
 
-import javafx.util.Callback;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.function.Consumer;
 
 public class FileLoader {
 
@@ -12,31 +12,30 @@ public class FileLoader {
     private final String url;
     private final int bufferSize;
     private final double expectedFileSizeMb;
-    private Callback<Boolean, Void> finishCallback;
+    private Consumer<Boolean> finishCallback;
 
-    public FileLoader(String from, File to)
-    {
-        this(from,to,1024*5, 10.0);
+    public FileLoader(String from, File to) {
+        this(from, to, 1024 * 5, 10.0);
     }
 
-    public FileLoader(String from, File to, int bufferSize,double expectedFileSizeMb)
-    {
+    public FileLoader(String from, File to, int bufferSize, double expectedFileSizeMb) {
         this.url = from;
         this.file = to;
-        this.finishCallback = param -> null;
+        this.finishCallback = a -> {
+        };
         this.bufferSize = bufferSize;
         this.expectedFileSizeMb = expectedFileSizeMb;
     }
 
-    public void start(Callback<Double,Void> tickCallback)
-    {
+    public void start(Consumer<Double> tickCallback) {
         Thread thread = new Thread(() -> {
             try {
                 URL url = new URL(this.url);
                 HttpURLConnection httpConnection = (HttpURLConnection) (url.openConnection());
 
                 //No luck with Steam
-                int completeFileSize = httpConnection.getContentLength() > 0 ? httpConnection.getContentLength() : (int) (this.expectedFileSizeMb * 1024 * 1024); ;
+                int completeFileSize = httpConnection.getContentLength() > 0 ? httpConnection.getContentLength() : (int) (this.expectedFileSizeMb * 1024 * 1024);
+                ;
                 BufferedInputStream in = new BufferedInputStream(httpConnection.getInputStream());
                 FileOutputStream fos = new FileOutputStream(file.getAbsolutePath());
                 int bufferSize = this.bufferSize;
@@ -50,22 +49,22 @@ public class FileLoader {
                     downloadedFileSize += x;
                     // calculate progress
                     currentProgress = (double) downloadedFileSize / (double) completeFileSize;
-                    tickCallback.call(currentProgress);
+                    tickCallback.accept(currentProgress);
                 }
                 bout.close();
                 in.close();
-                this.finishCallback.call(true);
+                this.finishCallback.accept(true);
             } catch (MalformedURLException e) {
-                this.finishCallback.call(false);
+                this.finishCallback.accept(false);
             } catch (IOException e) {
                 e.printStackTrace();
-                this.finishCallback.call(false);
+                this.finishCallback.accept(false);
             }
         });
         thread.start();
     }
 
-    public void onFinish(Callback<Boolean,Void> finishCallback) {
+    public void onFinish(Consumer<Boolean> finishCallback) {
         this.finishCallback = finishCallback;
     }
 }

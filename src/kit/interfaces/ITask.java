@@ -1,8 +1,11 @@
 package kit.interfaces;
-import javafx.util.Callback;
+
+import java.util.function.Consumer;
 
 public interface ITask {
     String getStatusString();
-    void onFinish(Callback<Boolean, Void> finishCallback) ;
-    void start(Callback<Double, Void> tickCallback) ;
+
+    void onFinish(Consumer<Boolean> finishCallback);
+
+    void start(Consumer<Double> tickCallback);
 }

@@ -95,7 +95,7 @@ public class MainFormController {
         }
 
         List<String> tasks = new ArrayList<>();
-        for(Config.Task val : Config.Task.values()) {
+        for (Config.Task val : Config.Task.values()) {
             tasks.add(val.getTitle());
         }
         choiceBoxTask.setItems(FXCollections.observableList(tasks));
@@ -120,82 +120,29 @@ public class MainFormController {
         TableColumn<Game, String> numberCol = (TableColumn<Game, String>) tableGames.getColumns().get(0);
         numberCol.setCellValueFactory(param -> {
             int number = tableGames.getItems().indexOf(param.getValue()) + 1;
-            return new ObservableValue<String>() {
-                @Override
-                public void addListener(InvalidationListener listener) {
-
-                }
-
-                @Override
-                public void removeListener(InvalidationListener listener) {
-
-                }
-
-                @Override
-                public void addListener(ChangeListener<? super String> listener) {
-
-                }
-
-                @Override
-                public void removeListener(ChangeListener<? super String> listener) {
-
-                }
-
-                @Override
-                public String getValue() {
-                    return String.valueOf(number);
-                }
-            };
-
+            return new SimpleObservableValue<>(() -> String.valueOf(number));
         });
         TableColumn<Game, String> execsCol = (TableColumn<Game, String>) tableGames.getColumns().get(4);
-        execsCol.setCellValueFactory(param -> new ObservableValue<String>() {
-            @Override
-            public void addListener(InvalidationListener listener) {
-
+        execsCol.setCellValueFactory(param -> new SimpleObservableValue<>(() -> {
+            String result = "";
+            ArrayList<String> files = param.getValue().getExecs();
+            for (int i = 0; i < files.size(); i++) {
+                result += files.get(i) + "\n";
             }
-
-            @Override
-            public void removeListener(InvalidationListener listener) {
-
-            }
-
-            @Override
-            public void addListener(ChangeListener<? super String> listener) {
-
-            }
-
-            @Override
-            public void removeListener(ChangeListener<? super String> listener) {
-
-            }
-
-            @Override
-            public String getValue() {
-                String result = "";
-                ArrayList<String> files = param.getValue().getExecs();
-                for (int i = 0; i < files.size(); i++) {
-                    result += files.get(i) + "\n";
-                }
-                return result;
-            }
-        });
+            return result;
+        }));
     }
 
-    public void showOptionsWindow()
-    {
+    public void showOptionsWindow() {
         logger.log("Showing options");
-        if(optionsWindow == null)
-        {
-            try
-            {
+        if (optionsWindow == null) {
+            try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/options/options.fxml"));
                 Stage stage = loader.load();
                 OptionsController ctrl = loader.getController();
-                ctrl.initializeSettings(logger,settings);
+                ctrl.initializeSettings(logger, settings);
                 optionsWindow = stage;
-            } catch (Exception e)
-            {
+            } catch (Exception e) {
                 logger.log("Couldn't create new window");
             }
             optionsWindow.show();
@@ -235,20 +182,17 @@ public class MainFormController {
     }
 
 
-    public void runTasks(ITask[] finders)
-    {
-        runTasks(finders,true);
+    public void runTasks(ITask[] finders) {
+        runTasks(finders, true);
     }
 
-    public void runTasks(ITask[] finders,boolean updateTable)
-    {
-        runTasks(new LinkedList<>(Arrays.asList(finders)),updateTable);
+    public void runTasks(ITask[] finders, boolean updateTable) {
+        runTasks(new LinkedList<>(Arrays.asList(finders)), updateTable);
     }
-    public void runTasks(Queue<ITask> queue, boolean updateTables)
-    {
+
+    public void runTasks(Queue<ITask> queue, boolean updateTables) {
         ITask task = queue.poll();
-        if(task == null)
-        {
+        if (task == null) {
             return;
         }
 
@@ -259,18 +203,16 @@ public class MainFormController {
                 initGames();
                 saveConfigJson();
             });
-            runTasks(queue,updateTables);
-            return null;
+            runTasks(queue, updateTables);
         });
         task.start(param -> {
             progress.setTaskProgress(param);
-            if(updateTables) {
+            if (updateTables) {
                 Platform.runLater(() -> {
                     initGames();
                     saveConfigJson();
                 });
             }
-            return null;
         });
     }
 
@@ -283,7 +225,7 @@ public class MainFormController {
         settings.put(Config.Keys.GAMES.getKey(), arr);
         settings.put(Config.Keys.VDF_FILE.getKey(), textFieldShortcutsFile.getText());
         settings.put(Config.Keys.GAMES_DIRECTORY_PATH.getKey(), textFieldGamesDirectory.getText());
-        settings.put(Config.Keys.USE_CACHE.getKey(),checkboxUseCache.isSelected());
+        settings.put(Config.Keys.USE_CACHE.getKey(), checkboxUseCache.isSelected());
         this.jsonHelper.writeJsonToFile(Config.getPropsJsonFilePath(), settings);
     }
 
@@ -298,9 +240,8 @@ public class MainFormController {
         List<ITask> tasks = new ArrayList<>();
         String selectedTaskLabel = choiceBoxTask.getValue().toString();
         Config.Task selectedTask = Arrays.stream(Config.Task.values()).filter(task1 -> selectedTaskLabel.equals(task1.getTitle())).findFirst().get();
-        switch (selectedTask)
-        {
-            case LOAD_STEAM_GAMES :
+        switch (selectedTask) {
+            case LOAD_STEAM_GAMES:
                 tasks.add(new SteamGamesLoader(logger, settings));
                 update = false;
                 break;
@@ -311,10 +252,10 @@ public class MainFormController {
                 tasks.add(new ExeFinder(logger, settings));
                 break;
             default:
-                tasks.add(new GameFolderFinder(logger,settings));
-                tasks.add(new ExeFinder(logger,settings));
+                tasks.add(new GameFolderFinder(logger, settings));
+                tasks.add(new ExeFinder(logger, settings));
         }
-        this.runTasks(tasks.toArray(new ITask[0]),update);
+        this.runTasks(tasks.toArray(new ITask[0]), update);
 
     }
 }

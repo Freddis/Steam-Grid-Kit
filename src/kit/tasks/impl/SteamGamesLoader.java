@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.util.function.Consumer;
 
 public class SteamGamesLoader implements ITask {
 
@@ -29,27 +30,26 @@ public class SteamGamesLoader implements ITask {
     }
 
     @Override
-    public void onFinish(Callback<Boolean, Void> finishCallback) {
+    public void onFinish(Consumer<Boolean> finishCallback) {
         loader.onFinish((status) -> {
             checkResult(status, finishCallback);
-            return null;
         });
     }
 
-    public void checkResult(boolean status, Callback<Boolean, Void> finishCallback) {
+    public void checkResult(boolean status, Consumer<Boolean> finishCallback) {
         JsonHelper jsonHelper = new JsonHelper(logger);
         JSONObject json = jsonHelper.readJsonFromFile(Config.getSteamLibraryJsonFilePath());
 
         if(!status)
         {
             logger.log("Could't get response from Steam API");
-            finishCallback.call(false);
+            finishCallback.accept(false);
             return;
         }
 
         if (!json.has("applist") || !json.optJSONObject("applist").has("apps")) {
             logger.log("Seems like json is malformed");
-            finishCallback.call(false);
+            finishCallback.accept(false);
             return;
         }
 
@@ -59,15 +59,15 @@ public class SteamGamesLoader implements ITask {
         if(apps.length() <= 0)
         {
             logger.log("Something went wrong");
-            finishCallback.call(false);
+            finishCallback.accept(false);
             return;
         }
-        finishCallback.call(true);
+        finishCallback.accept(true);
     }
 
 
     @Override
-    public void start(Callback<Double, Void> tickCallback) {
+    public void start(Consumer<Double> tickCallback) {
         loader.start(tickCallback);
     }
 }
