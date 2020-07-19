@@ -1,7 +1,20 @@
 package kit.utils;
 
-public class StringComparator {
+public class StringHelper {
 
+    public static boolean hasSubstrings(String str, String[] searches, boolean caseInsensitive)
+    {
+        for(String search : searches)
+        {
+                String iStr = caseInsensitive ? str.toLowerCase() : str;
+                String iSearch = caseInsensitive ? search.toLowerCase() : search;
+                if(iStr.indexOf(iSearch) != -1)
+                {
+                    return true;
+                }
+        }
+        return false;
+    }
     public static double strippedSimilarity(String a, String b) {
         String aStripped = strip(a);
         String bStripped = strip(b);

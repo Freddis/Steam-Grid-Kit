@@ -28,7 +28,24 @@ public class Config {
             String path = jarDir.getCanonicalPath();
             return path;
         } catch (IOException e) {
-           return ".";
+            return ".";
+        }
+    }
+
+    public enum Keys {
+        GAMES_DIRECTORY_PATH("gamesDirectory"),
+        GAMES("games"),
+        USE_CACHE("useCache"),
+        VDF_FILE("vdfFile");
+
+        private String key;
+
+        Keys(String name) {
+            this.key = name;
+        }
+
+        public String getKey() {
+            return key;
         }
     }
 }

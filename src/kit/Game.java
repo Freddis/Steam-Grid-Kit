@@ -1,11 +1,12 @@
 package kit;
 
+import kit.interfaces.IJson;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class Game {
+public class Game implements IJson {
 
     private String directory;
     private String name;
@@ -14,12 +15,7 @@ public class Game {
 
     public Game(JSONObject obj) {
         this(obj.getString("directory"));
-        this.name =  obj.has("name") ? obj.getString("name") : null;
-        this.steamId = obj.has("steamId") ? obj.getString("steamId") : null;
-        JSONArray arr = obj.getJSONArray("execs");
-        for (int i = 0; i < arr.length(); i++) {
-            execs.add(arr.getString(i));
-        }
+        this.init(obj);
     }
 
     public Game(String directory) {
@@ -39,8 +35,18 @@ public class Game {
         obj.put("directory", directory);
         obj.put("name", name);
         obj.put("steamId", steamId);
-        String[] arr = execs.toArray(new String[0]);
-        obj.put("execs", arr);
+        obj.put("execs", new JSONArray(execs));
         return obj;
+    }
+
+    @Override
+    public boolean init(JSONObject obj) {
+        this.name = obj.optString("name");
+        this.steamId = obj.optString("steamId");
+        JSONArray arr = obj.getJSONArray("execs");
+        for (int i = 0; i < arr.length(); i++) {
+            execs.add(arr.getString(i));
+        }
+        return true;
     }
 }

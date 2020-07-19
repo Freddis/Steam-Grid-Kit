@@ -1,10 +1,14 @@
 package kit.utils;
 
+import javafx.util.Callback;
+import kit.interfaces.IJson;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 
 public class JsonHelper {
 
@@ -43,5 +47,37 @@ public class JsonHelper {
             this.logger.log("Couldn't write json to file: " + path);
         }
         return false;
+    }
+
+    public String[] toStringArray(JSONArray arr)
+    {
+        String[] result = new String[arr.length()];
+        for(int i =0; i < arr.length(); i++)
+        {
+            result[i] = arr.getString(i);
+        }
+        return result;
+    }
+
+
+    public <T extends IJson> ArrayList<T> toList(Callback<JSONObject,IJson> factory, JSONArray array) {
+        ArrayList<T> result = new ArrayList<>();
+        for(int i = 0; i < array.length(); i++)
+        {
+            JSONObject obj = array.optJSONObject(i);
+            IJson instance = factory.call(obj);
+            T casted = (T) instance;
+            result.add(casted);
+        }
+        return result;
+    }
+
+    public JSONArray toJsonArray(IJson[] list) {
+        JSONArray result = new JSONArray();
+        for(IJson obj : list)
+        {
+            result.put(obj.toJson());
+        }
+        return result;
     }
 }

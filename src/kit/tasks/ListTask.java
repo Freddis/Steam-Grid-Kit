@@ -1,15 +1,16 @@
-package kit;
+package kit.tasks;
 
 import javafx.util.Callback;
+import kit.interfaces.ITask;
 import kit.utils.Logger;
 import java.util.List;
 
-public abstract class ProgressedTask<T> {
+public abstract class ListTask<T> implements ITask {
 
     private Callback<Boolean, Void> finishCallback;
     protected final Logger logger;
 
-    public ProgressedTask(Logger logger) {
+    public ListTask(Logger logger) {
         this.logger = logger;
         this.finishCallback = param -> null;
     }
