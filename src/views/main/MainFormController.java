@@ -1,9 +1,6 @@
 package views.main;
 
 import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -16,12 +13,16 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import kit.Config;
-import kit.Game;
+import kit.models.Game;
+import kit.interfaces.ITask;
 import kit.tasks.impl.ExeFinder;
 import kit.tasks.impl.GameFolderFinder;
-import kit.interfaces.ITask;
 import kit.tasks.impl.SteamGamesLoader;
-import kit.utils.*;
+import kit.tasks.impl.SteamIdFinder;
+import kit.utils.JsonHelper;
+import kit.utils.Logger;
+import kit.utils.Progress;
+import kit.utils.SimpleObservableValue;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import views.options.OptionsController;
@@ -115,13 +116,21 @@ public class MainFormController {
 
 
     private void initTable() {
-        TableColumn<Game, String> directoryCol = (TableColumn<Game, String>) tableGames.getColumns().get(1);
-        directoryCol.setCellValueFactory(new PropertyValueFactory<>("directory"));
         TableColumn<Game, String> numberCol = (TableColumn<Game, String>) tableGames.getColumns().get(0);
         numberCol.setCellValueFactory(param -> {
             int number = tableGames.getItems().indexOf(param.getValue()) + 1;
             return new SimpleObservableValue<>(() -> String.valueOf(number));
         });
+
+        TableColumn<Game, String> directoryCol = (TableColumn<Game, String>) tableGames.getColumns().get(1);
+        directoryCol.setCellValueFactory(new PropertyValueFactory<>("directory"));
+
+        TableColumn<Game, String> gameCol = (TableColumn<Game, String>) tableGames.getColumns().get(2);
+        gameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+
+        TableColumn<Game, String> idCol = (TableColumn<Game, String>) tableGames.getColumns().get(3);
+        idCol.setCellValueFactory(new PropertyValueFactory<>("steamId"));
+
         TableColumn<Game, String> execsCol = (TableColumn<Game, String>) tableGames.getColumns().get(4);
         execsCol.setCellValueFactory(param -> new SimpleObservableValue<>(() -> {
             String result = "";
@@ -251,11 +260,14 @@ public class MainFormController {
             case FIND_EXECUTABLES:
                 tasks.add(new ExeFinder(logger, settings));
                 break;
-            default:
+            case FIND_GAME_IDS:
+                tasks.add(new SteamIdFinder(logger, settings));
+                break;
+            case ALL:
                 tasks.add(new GameFolderFinder(logger, settings));
                 tasks.add(new ExeFinder(logger, settings));
+                break;
         }
         this.runTasks(tasks.toArray(new ITask[0]), update);
-
     }
 }

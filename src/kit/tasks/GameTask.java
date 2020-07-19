@@ -1,7 +1,7 @@
 package kit.tasks;
 
 import kit.Config;
-import kit.Game;
+import kit.models.Game;
 import kit.utils.JsonHelper;
 import kit.utils.Logger;
 import org.json.JSONArray;

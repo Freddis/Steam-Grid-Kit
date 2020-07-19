@@ -1,6 +1,5 @@
 package kit.tasks.impl;
 
-import javafx.util.Callback;
 import kit.Config;
 import kit.interfaces.ITask;
 import kit.utils.FileLoader;

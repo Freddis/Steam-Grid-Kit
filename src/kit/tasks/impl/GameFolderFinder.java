@@ -1,7 +1,7 @@
 package kit.tasks.impl;
 
 import kit.Config;
-import kit.Game;
+import kit.models.Game;
 import kit.interfaces.ITask;
 import kit.utils.JsonHelper;
 import kit.utils.Logger;

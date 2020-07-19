@@ -1,7 +1,7 @@
 package kit.tasks.impl;
 
 import kit.Config;
-import kit.Game;
+import kit.models.Game;
 import kit.tasks.GameTask;
 import kit.utils.Logger;
 import kit.utils.StringHelper;

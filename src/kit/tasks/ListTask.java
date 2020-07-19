@@ -1,6 +1,5 @@
 package kit.tasks;
 
-import javafx.util.Callback;
 import kit.interfaces.ITask;
 import kit.utils.Logger;
 
@@ -9,7 +8,7 @@ import java.util.function.Consumer;
 
 public abstract class ListTask<T> implements ITask {
 
-    private Consumer<Boolean> finishCallback;
+    protected Consumer<Boolean> finishCallback;
     protected final Logger logger;
 
     public ListTask(Logger logger) {
