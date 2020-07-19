@@ -32,6 +32,8 @@ import java.util.*;
 
 public class MainFormController {
     @FXML
+    public ChoiceBox choiceBoxTask;
+    @FXML
     Node container;
     @FXML
     private TextArea textAreaLog;
@@ -39,8 +41,6 @@ public class MainFormController {
     private ProgressBar progressBar;
     @FXML
     private Label labelProgress;
-    @FXML
-    private Button buttonLoadSteamLibrary;
     @FXML
     private Button buttonStart;
     @FXML
@@ -71,7 +71,6 @@ public class MainFormController {
         this.jsonHelper = new JsonHelper(this.logger);
         progress = new Progress(labelProgress, progressBar, new Node[]{
                 buttonStart,
-                buttonLoadSteamLibrary,
                 buttonSelectGamesDirectory,
                 buttonSelectShortcutsFile,
                 checkboxUseCache,
@@ -94,6 +93,14 @@ public class MainFormController {
             boolean val = settings.getBoolean(Config.Keys.USE_CACHE.getKey());
             checkboxUseCache.setSelected(val);
         }
+
+        List<String> tasks = new ArrayList<>();
+        for(Config.Task val : Config.Task.values()) {
+            tasks.add(val.getTitle());
+        }
+        choiceBoxTask.setItems(FXCollections.observableList(tasks));
+        choiceBoxTask.getSelectionModel().select(0);
+
         this.initTable();
         this.initGames();
     }
@@ -248,6 +255,10 @@ public class MainFormController {
         this.progress.startTask(task.getStatusString() + "...");
         task.onFinish((status) -> {
             progress.endTask();
+            Platform.runLater(() -> {
+                initGames();
+                saveConfigJson();
+            });
             runTasks(queue,updateTables);
             return null;
         });
@@ -276,34 +287,34 @@ public class MainFormController {
         this.jsonHelper.writeJsonToFile(Config.getPropsJsonFilePath(), settings);
     }
 
-    public void loadSteamLibrary(MouseEvent mouseEvent) {
-        this.runTasks(new ITask[]{
-                new SteamGamesLoader(logger, settings)
-        },false);
-    }
-
     public void toggleUseCache(MouseEvent mouseEvent) {
         boolean selected = checkboxUseCache.isSelected();
         checkboxUseCache.setSelected(selected);
         this.saveConfigJson();
     }
 
-    public void findExecs(MouseEvent mouseEvent) {
-        this.runTasks(new ITask[]{
-                new ExeFinder(logger, settings)
-        });
-    }
-
-    public void findGameFolders(MouseEvent mouseEvent) {
-        this.runTasks(new ITask[]{
-                new GameFolderFinder(logger, settings)
-        });
-    }
-
     public void start(MouseEvent event) {
-        this.runTasks(new ITask[]{
-                new GameFolderFinder(logger, settings),
-                new ExeFinder(logger, settings),
-        });
+        boolean update = true;
+        List<ITask> tasks = new ArrayList<>();
+        String selectedTaskLabel = choiceBoxTask.getValue().toString();
+        Config.Task selectedTask = Arrays.stream(Config.Task.values()).filter(task1 -> selectedTaskLabel.equals(task1.getTitle())).findFirst().get();
+        switch (selectedTask)
+        {
+            case LOAD_STEAM_GAMES :
+                tasks.add(new SteamGamesLoader(logger, settings));
+                update = false;
+                break;
+            case FIND_GAME_FOLDERS:
+                tasks.add(new GameFolderFinder(logger, settings));
+                break;
+            case FIND_EXECUTABLES:
+                tasks.add(new ExeFinder(logger, settings));
+                break;
+            default:
+                tasks.add(new GameFolderFinder(logger,settings));
+                tasks.add(new ExeFinder(logger,settings));
+        }
+        this.runTasks(tasks.toArray(new ITask[0]),update);
+
     }
 }

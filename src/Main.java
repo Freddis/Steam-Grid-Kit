@@ -9,12 +9,11 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        //Don't want to use primary stage, since it cannot be controlled with FXML and I want all styles to be in FXML
         URL res = getClass().getResource("/views/main/main.fxml");
         Stage stage = FXMLLoader.load(res);
-        primaryStage.setScene(stage.getScene());
-        primaryStage.setTitle(stage.getTitle());
-        primaryStage.show();
-        primaryStage.setOnCloseRequest(event -> {
+        stage.show();
+        stage.setOnCloseRequest(event -> {
             Platform.exit();
             System.exit(0);
         });

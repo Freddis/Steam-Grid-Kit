@@ -43,9 +43,25 @@ public class Config {
         Keys(String name) {
             this.key = name;
         }
-
         public String getKey() {
             return key;
+        }
+    }
+
+    public enum Task {
+        ALL("All"),
+        FIND_GAME_FOLDERS("Find Game Folders"),
+        LOAD_STEAM_GAMES("Load Steam Games"),
+        FIND_EXECUTABLES("Find Executable"),
+        FIND_GAME_IDS("Find Steam IDs");
+
+        public String title;
+
+        Task(String name) {
+            this.title = name;
+        }
+        public String getTitle() {
+            return title;
         }
     }
 }
