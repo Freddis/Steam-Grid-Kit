@@ -1,3 +1,11 @@
 .ready-for-export .table-cell {
     -fx-text-fill: green;
 }
+.game-image {
+    -fx-max-height: 30;
+    -fx-background-size: contain;
+    -fx-background-color: bisque;
+    -fx-border-color: blue;
+    -fx-border-style: solid;
+    -fx-border-width: 3px;
+}

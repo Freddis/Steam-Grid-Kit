@@ -14,6 +14,7 @@ public class FileLoader {
     private final double expectedFileSizeMb;
     private Consumer<Boolean> finishCallback;
 
+    @SuppressWarnings("unused")
     public FileLoader(String from, File to) {
         this(from, to, 1024 * 5, 10.0);
     }
@@ -35,15 +36,14 @@ public class FileLoader {
 
                 //No luck with Steam
                 int completeFileSize = httpConnection.getContentLength() > 0 ? httpConnection.getContentLength() : (int) (this.expectedFileSizeMb * 1024 * 1024);
-                ;
                 BufferedInputStream in = new BufferedInputStream(httpConnection.getInputStream());
                 FileOutputStream fos = new FileOutputStream(file.getAbsolutePath());
                 int bufferSize = this.bufferSize;
                 BufferedOutputStream bout = new BufferedOutputStream(fos, bufferSize);
                 byte[] data = new byte[bufferSize];
                 int downloadedFileSize = 0;
-                int x = 0;
-                double currentProgress = 0;
+                int x;
+                double currentProgress;
                 while ((x = in.read(data, 0, bufferSize)) >= 0) {
                     bout.write(data, 0, x);
                     downloadedFileSize += x;

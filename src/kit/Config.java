@@ -13,6 +13,10 @@ public class Config {
         return getJarPath() + "/steam.json";
     }
 
+    public static String getImageDirectory() {
+        return getJarPath() + "/images";
+    }
+
     public static String getJarPath() {
 
         //As artifact, getResource(".") doesn't work
@@ -56,7 +60,8 @@ public class Config {
         FIND_GAME_FOLDERS("Find Game Folders"),
         LOAD_STEAM_GAMES("Load Steam Games"),
         FIND_EXECUTABLES("Find Executable"),
-        FIND_GAME_IDS("Find Steam IDs");
+        FIND_GAME_IDS("Find Steam IDs"),
+        LOAD_STEAM_IMAGES("Load Steam Images");
 
         public String title;
 

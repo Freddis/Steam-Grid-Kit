@@ -7,6 +7,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -14,14 +16,8 @@ import javafx.util.Callback;
 import kit.Config;
 import kit.interfaces.ITask;
 import kit.models.Game;
-import kit.tasks.impl.ExeFinder;
-import kit.tasks.impl.GameFolderFinder;
-import kit.tasks.impl.SteamGamesLoader;
-import kit.tasks.impl.SteamIdFinder;
-import kit.utils.JsonHelper;
-import kit.utils.Logger;
-import kit.utils.Progress;
-import kit.utils.SimpleObservableValue;
+import kit.tasks.impl.*;
+import kit.utils.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import views.options.OptionsController;
@@ -41,6 +37,14 @@ public class MainFormController {
     public TableColumn<Game, String> tableColumnSteamId;
     @FXML
     public TableColumn<Game, String> tableColumnExecs;
+    @FXML
+    public TableColumn<Game, VBox> tableColumnImageHeader;
+    @FXML
+    public TableColumn<Game, ImageView> tableColumnImageCover;
+    @FXML
+    public TableColumn<Game, ImageView> tableColumnImageBackground;
+    @FXML
+    public TableColumn<Game, ImageView> tableColumnImageLogo;
     @FXML
     private ChoiceBox<String> choiceBoxTask;
     @FXML
@@ -72,6 +76,7 @@ public class MainFormController {
     private Logger logger;
     private JsonHelper jsonHelper;
     private Progress progress;
+    private ImageCache images = new ImageCache();
 
     @FXML
     public void initialize() {
@@ -128,9 +133,15 @@ public class MainFormController {
             return new SimpleObservableValue<>(() -> String.valueOf(number));
         });
 
-        tableColumnDirectory.setCellValueFactory(param -> new SimpleObservableValue<>(() -> param.getValue().getDirectory()));
-        tableColumnGame.setCellValueFactory(param -> new SimpleObservableValue<>(() -> param.getValue().getName()));
-        tableColumnSteamId.setCellValueFactory(param -> new SimpleObservableValue<>(() -> param.getValue().getSteamId()));
+//        tableColumnDirectory.setCellValueFactory(param -> new SimpleObservableValue<>(() -> param.getValue().getDirectory() + "\n" + param.getValue().getSteamId() + "\n" + param.getValue().getName()));
+//        tableColumnGame.setCellValueFactory(param -> new SimpleObservableValue<>(() -> param.getValue().getName()));
+        tableColumnGame.setCellValueFactory(param -> new SimpleObservableValue<>(() ->
+                param.getValue().getDirectory() + "\n"
+                        + param.getValue().getSteamId() + "\n"
+                        + param.getValue().getName() + "\n"
+                        + param.getValue().getExecName()
+        ));
+//        tableColumnSteamId.setCellValueFactory(param -> new SimpleObservableValue<>(() -> param.getValue().getSteamId()));
         tableColumnExecs.setCellValueFactory(param -> new SimpleObservableValue<>(() -> {
             StringBuilder result = new StringBuilder();
             ArrayList<String> files = param.getValue().getExecs();
@@ -139,6 +150,18 @@ public class MainFormController {
             }
             return result.toString();
         }));
+        tableColumnImageHeader.setCellValueFactory(item -> new SimpleObservableValue<>(() -> {
+            Node[] nodes = new Node[]{
+                    images.getImageView(item.getValue().getHeaderImageFile(), tableColumnImageHeader.widthProperty()),
+                    images.getImageView(item.getValue().getBackgroundImageFile(), tableColumnImageHeader.widthProperty()),
+                    images.getImageView(item.getValue().getLogoImageFile(), tableColumnImageHeader.widthProperty()),
+            };
+            Node[] filtered = Arrays.stream(nodes).filter(Objects::nonNull).toArray(Node[]::new);
+            return new VBox(filtered);
+        }));
+        tableColumnImageCover.setCellValueFactory(item -> new SimpleObservableValue<>(() -> images.getImageView(item.getValue().getCoverImageFile(), tableColumnImageCover.widthProperty())));
+//        tableColumnImageBackground.setCellValueFactory(item -> new SimpleObservableValue<>(() -> images.getImageView(item.getValue().getBackgroundImageFile(), tableColumnImageBackground.widthProperty())));
+//        tableColumnImageLogo.setCellValueFactory(item -> new SimpleObservableValue<>(() -> images.getImageView(item.getValue().getLogoImageFile(), tableColumnImageLogo.widthProperty())));
 
         tableGames.setRowFactory(new Callback<TableView<Game>, TableRow<Game>>() {
             @Override
@@ -268,6 +291,9 @@ public class MainFormController {
                 break;
             case FIND_GAME_IDS:
                 tasks.add(new SteamIdFinder(logger, settings));
+                break;
+            case LOAD_STEAM_IMAGES:
+                tasks.add(new SteamImageLoader(logger, settings));
                 break;
             case ALL:
                 tasks.add(new GameFolderFinder(logger, settings));
