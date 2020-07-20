@@ -16,7 +16,7 @@ public class SteamGamesLoader implements ITask {
     private final FileLoader loader;
     private final Logger logger;
 
-    public SteamGamesLoader(Logger logger, JSONObject settings) {
+    public SteamGamesLoader(Logger logger) {
         this.logger = logger;
         String url = "http://api.steampowered.com/ISteamApps/GetAppList/v0002/?format=json";
         File file = new File(Config.getSteamLibraryJsonFilePath());
@@ -30,9 +30,7 @@ public class SteamGamesLoader implements ITask {
 
     @Override
     public void onFinish(Consumer<Boolean> finishCallback) {
-        loader.onFinish((status) -> {
-            checkResult(status, finishCallback);
-        });
+        loader.onFinish((status) -> checkResult(status, finishCallback));
     }
 
     public void checkResult(boolean status, Consumer<Boolean> finishCallback) {
@@ -54,7 +52,6 @@ public class SteamGamesLoader implements ITask {
 
         JSONArray apps = json.getJSONObject("applist").getJSONArray("apps");
         logger.log("Loaded " + apps.length() + " game ids");
-        boolean good = apps.length() > 0;
         if(apps.length() <= 0)
         {
             logger.log("Something went wrong");

@@ -23,10 +23,10 @@ public class JsonHelper {
         this.logger.log("Loading data from file " + path);
         File json = new File(path);
         JSONObject root;
-        String content = null;
+        String content;
         try {
             content = new String(Files.readAllBytes(Paths.get(json.toURI())));
-            root = content != null ? new JSONObject(content) : new JSONObject();
+            root = new JSONObject(content);
         } catch (IOException e) {
             this.logger.log("Can't parse json from: " + path);
             e.printStackTrace();
@@ -34,6 +34,8 @@ public class JsonHelper {
         }
         return root;
     }
+
+    @SuppressWarnings("UnusedReturnValue")
     public boolean writeJsonToFile(String path, JSONObject obj) {
         this.logger.log("Writing data to file " + path);
         String output = obj.toString();
@@ -60,14 +62,13 @@ public class JsonHelper {
     }
 
 
-    public <T extends IJson> ArrayList<T> toList(Callback<JSONObject,IJson> factory, JSONArray array) {
+    public <T extends IJson> ArrayList<T> toList(Callback<JSONObject,T> factory, JSONArray array) {
         ArrayList<T> result = new ArrayList<>();
         for(int i = 0; i < array.length(); i++)
         {
             JSONObject obj = array.optJSONObject(i);
-            IJson instance = factory.call(obj);
-            T casted = (T) instance;
-            result.add(casted);
+            T instance = factory.call(obj);
+            result.add(instance);
         }
         return result;
     }

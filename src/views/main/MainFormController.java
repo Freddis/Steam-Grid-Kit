@@ -7,14 +7,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import kit.Config;
-import kit.models.Game;
 import kit.interfaces.ITask;
+import kit.models.Game;
 import kit.tasks.impl.ExeFinder;
 import kit.tasks.impl.GameFolderFinder;
 import kit.tasks.impl.SteamGamesLoader;
@@ -33,9 +32,19 @@ import java.util.*;
 
 public class MainFormController {
     @FXML
-    public ChoiceBox choiceBoxTask;
+    public TableColumn<Game, String> tableColumnNumber;
     @FXML
-    Node container;
+    public TableColumn<Game, String> tableColumnDirectory;
+    @FXML
+    public TableColumn<Game, String> tableColumnGame;
+    @FXML
+    public TableColumn<Game, String> tableColumnSteamId;
+    @FXML
+    public TableColumn<Game, String> tableColumnExecs;
+    @FXML
+    private ChoiceBox<String> choiceBoxTask;
+    @FXML
+    private Node container;
     @FXML
     private TextArea textAreaLog;
     @FXML
@@ -45,8 +54,6 @@ public class MainFormController {
     @FXML
     private Button buttonStart;
     @FXML
-    private Button buttonShowOptions;
-    @FXML
     private Button buttonSelectShortcutsFile;
     @FXML
     private Button buttonSelectGamesDirectory;
@@ -55,12 +62,12 @@ public class MainFormController {
     @FXML
     private TextField textFieldGamesDirectory;
     @FXML
-    private TableView tableGames;
+    private TableView<Game> tableGames;
     @FXML
     public CheckBox checkboxUseCache;
 
     private Stage optionsWindow;
-    private ArrayList<Game> games = new ArrayList<>();
+    private final ArrayList<Game> games = new ArrayList<>();
     private JSONObject settings;
     private Logger logger;
     private JsonHelper jsonHelper;
@@ -116,30 +123,37 @@ public class MainFormController {
 
 
     private void initTable() {
-        TableColumn<Game, String> numberCol = (TableColumn<Game, String>) tableGames.getColumns().get(0);
-        numberCol.setCellValueFactory(param -> {
+        tableColumnNumber.setCellValueFactory(param -> {
             int number = tableGames.getItems().indexOf(param.getValue()) + 1;
             return new SimpleObservableValue<>(() -> String.valueOf(number));
         });
 
-        TableColumn<Game, String> directoryCol = (TableColumn<Game, String>) tableGames.getColumns().get(1);
-        directoryCol.setCellValueFactory(new PropertyValueFactory<>("directory"));
-
-        TableColumn<Game, String> gameCol = (TableColumn<Game, String>) tableGames.getColumns().get(2);
-        gameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
-
-        TableColumn<Game, String> idCol = (TableColumn<Game, String>) tableGames.getColumns().get(3);
-        idCol.setCellValueFactory(new PropertyValueFactory<>("steamId"));
-
-        TableColumn<Game, String> execsCol = (TableColumn<Game, String>) tableGames.getColumns().get(4);
-        execsCol.setCellValueFactory(param -> new SimpleObservableValue<>(() -> {
-            String result = "";
+        tableColumnDirectory.setCellValueFactory(param -> new SimpleObservableValue<>(() -> param.getValue().getDirectory()));
+        tableColumnGame.setCellValueFactory(param -> new SimpleObservableValue<>(() -> param.getValue().getName()));
+        tableColumnSteamId.setCellValueFactory(param -> new SimpleObservableValue<>(() -> param.getValue().getSteamId()));
+        tableColumnExecs.setCellValueFactory(param -> new SimpleObservableValue<>(() -> {
+            StringBuilder result = new StringBuilder();
             ArrayList<String> files = param.getValue().getExecs();
-            for (int i = 0; i < files.size(); i++) {
-                result += files.get(i) + "\n";
+            for (String file : files) {
+                result.append(file).append("\n");
             }
-            return result;
+            return result.toString();
         }));
+
+        tableGames.setRowFactory(new Callback<TableView<Game>, TableRow<Game>>() {
+            @Override
+            public TableRow<Game> call(TableView param) {
+                return new TableRow<Game>() {
+                    @Override
+                    protected void updateItem(Game item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (Objects.nonNull(item) && item.isReadyToExport()) {
+                            this.getStyleClass().add("ready-for-export");
+                        }
+                    }
+                };
+            }
+        });
     }
 
     public void showOptionsWindow() {
@@ -155,14 +169,12 @@ public class MainFormController {
                 logger.log("Couldn't create new window");
             }
             optionsWindow.show();
-            optionsWindow.setOnCloseRequest(event -> {
-                optionsWindow = null;
-            });
+            optionsWindow.setOnCloseRequest(event -> optionsWindow = null);
         }
         optionsWindow.requestFocus();
     }
 
-    public void selectGamesDirectory(MouseEvent event) {
+    public void selectGamesDirectory() {
         System.out.println("Setting games directory");
         DirectoryChooser fileChooser = new DirectoryChooser();
         fileChooser.setTitle("Open Resource File");
@@ -176,7 +188,7 @@ public class MainFormController {
         this.saveConfigJson();
     }
 
-    public void selectShortcutFile(MouseEvent event) {
+    public void selectShortcutFile() {
         System.out.println("Setting vdf file");
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Resource File");
@@ -190,11 +202,6 @@ public class MainFormController {
         this.saveConfigJson();
     }
 
-
-    public void runTasks(ITask[] finders) {
-        runTasks(finders, true);
-    }
-
     public void runTasks(ITask[] finders, boolean updateTable) {
         runTasks(new LinkedList<>(Arrays.asList(finders)), updateTable);
     }
@@ -204,7 +211,6 @@ public class MainFormController {
         if (task == null) {
             return;
         }
-
         this.progress.startTask(task.getStatusString() + "...");
         task.onFinish((status) -> {
             progress.endTask();
@@ -238,20 +244,20 @@ public class MainFormController {
         this.jsonHelper.writeJsonToFile(Config.getPropsJsonFilePath(), settings);
     }
 
-    public void toggleUseCache(MouseEvent mouseEvent) {
+    public void toggleUseCache() {
         boolean selected = checkboxUseCache.isSelected();
         checkboxUseCache.setSelected(selected);
         this.saveConfigJson();
     }
 
-    public void start(MouseEvent event) {
+    public void start() {
         boolean update = true;
         List<ITask> tasks = new ArrayList<>();
-        String selectedTaskLabel = choiceBoxTask.getValue().toString();
-        Config.Task selectedTask = Arrays.stream(Config.Task.values()).filter(task1 -> selectedTaskLabel.equals(task1.getTitle())).findFirst().get();
+        String selectedTaskLabel = choiceBoxTask.getValue();
+        Config.Task selectedTask = Arrays.stream(Config.Task.values()).filter(task1 -> selectedTaskLabel.equals(task1.getTitle())).findFirst().orElse(Config.Task.ALL);
         switch (selectedTask) {
             case LOAD_STEAM_GAMES:
-                tasks.add(new SteamGamesLoader(logger, settings));
+                tasks.add(new SteamGamesLoader(logger));
                 update = false;
                 break;
             case FIND_GAME_FOLDERS:

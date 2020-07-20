@@ -21,7 +21,7 @@ public abstract class ListTask<T> implements ITask {
         Thread thread = new Thread(() -> {
             List<T> list = this.getList();
             for (int i = 0; i < list.size(); i++) {
-                boolean result = false;
+                boolean result;
                 try {
                     result = this.process(list.get(i));
                 } catch (Exception e) {
@@ -45,10 +45,6 @@ public abstract class ListTask<T> implements ITask {
     protected abstract boolean process(T o);
 
     protected abstract List<T> getList();
-
-    protected void error(String error) {
-        logger.log(error);
-    }
 
     public void onFinish(Consumer<Boolean> finishCallback) {
         this.finishCallback = finishCallback;

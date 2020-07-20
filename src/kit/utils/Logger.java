@@ -16,7 +16,7 @@ public class Logger {
     }
     public void log(String msg)
     {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         String date = format.format(new Date());
         String line = date + ": " + msg + "\n";
         System.out.print(line);

@@ -34,7 +34,7 @@ public class ExeFinder extends GameTask {
         File gameDir = new File(folder,game.getDirectory());
         if(!gameDir.canRead())
         {
-            this.error("Can't read directory");
+            logger.log("Can't read directory");
             return false;
         }
         ArrayList<File> execs = new ArrayList<>();

@@ -8,7 +8,7 @@ public class StringHelper {
         {
                 String iStr = caseInsensitive ? str.toLowerCase() : str;
                 String iSearch = caseInsensitive ? search.toLowerCase() : search;
-                if(iStr.indexOf(iSearch) != -1)
+                if(iStr.contains(iSearch))
                 {
                     return true;
                 }

@@ -42,8 +42,8 @@ public class Progress {
 
     public void toggleControls(boolean state) {
         Platform.runLater(() -> {
-            for (int i = 0; i < controls.length; i++) {
-                controls[i].setDisable(!state);
+            for (Node control : controls) {
+                control.setDisable(!state);
             }
         });
     }

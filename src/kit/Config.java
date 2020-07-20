@@ -18,6 +18,7 @@ public class Config {
         //As artifact, getResource(".") doesn't work
         String url;
         try {
+            //noinspection ConstantConditions
             url = ClassLoader.getSystemClassLoader().getResource(".").getPath();
         } catch (Exception e) {
             url = ".";
@@ -25,6 +26,7 @@ public class Config {
 
         File jarDir = new File(url);
         try {
+            @SuppressWarnings("UnnecessaryLocalVariable")
             String path = jarDir.getCanonicalPath();
             return path;
         } catch (IOException e) {
@@ -38,11 +40,12 @@ public class Config {
         USE_CACHE("useCache"),
         VDF_FILE("vdfFile");
 
-        private String key;
+        private final String key;
 
         Keys(String name) {
             this.key = name;
         }
+
         public String getKey() {
             return key;
         }
@@ -60,6 +63,7 @@ public class Config {
         Task(String name) {
             this.title = name;
         }
+
         public String getTitle() {
             return title;
         }

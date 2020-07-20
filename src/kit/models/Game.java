@@ -11,7 +11,7 @@ public class Game implements IJson {
     private final String directory;
     private String name;
     private String steamId;
-    private ArrayList<String> execs = new ArrayList<>();
+    private final ArrayList<String> execs = new ArrayList<>();
 
     public Game(JSONObject obj) {
         this(obj.getString("directory"));
@@ -65,5 +65,11 @@ public class Game implements IJson {
 
     public void setSteamId(int appId) {
         this.steamId = String.valueOf(appId);
+    }
+
+    public boolean isReadyToExport() {
+        @SuppressWarnings("UnnecessaryLocalVariable")
+        boolean ready = this.execs.size() > 0 && this.steamId != null && this.name != null;
+        return ready;
     }
 }
