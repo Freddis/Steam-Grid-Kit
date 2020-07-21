@@ -58,9 +58,10 @@ public class SteamIdFinder extends GameTask {
              return true;
         }
         ArrayList<Pair<Double,SteamGame>> list = new ArrayList<>();
+        String compareToName = game.getAltName() != null ? game.getAltName() :  game.getDirectory();
         for(SteamGame steamGame : steamLibrary)
         {
-            double similarity = StringHelper.strippedSimilarity(game.getDirectory(), steamGame.getName());
+            double similarity = StringHelper.strippedSimilarity(compareToName, steamGame.getName());
             list.add(new Pair<>(similarity,steamGame));
         }
         list.sort((o1, o2) -> {

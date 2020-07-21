@@ -62,6 +62,10 @@ public abstract class GameTask extends ListTask<Game> {
         super.start(tickCallback);
     }
 
+    public void setUseCache(boolean useCache) {
+        this.useCache = useCache;
+    }
+
     protected abstract boolean processGame(Game game);
 
     public void setGame(Game game) {

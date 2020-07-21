@@ -66,7 +66,7 @@ public class SteamGamesLoader implements ITask {
             return;
         }
         File destination = new File(Config.getSteamLibraryJsonFilePath());
-        if (!destination.canWrite() || !destination.delete()) {
+        if (destination.exists() && (!destination.canWrite() || !destination.delete())) {
             logger.log("Cannot delete " + destination.getAbsolutePath());
             finishCallback.accept(false);
             return;
@@ -97,6 +97,11 @@ public class SteamGamesLoader implements ITask {
             return;
         }
         loader.start(tickCallback);
+    }
+
+    @Override
+    public void kill() {
+
     }
 
     private boolean canUseCache() {

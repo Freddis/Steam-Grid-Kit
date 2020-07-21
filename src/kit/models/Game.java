@@ -37,6 +37,7 @@ public class Game implements IJson {
     public JSONObject toJson() {
         JSONObject obj = new JSONObject();
         obj.put("directory", directory);
+        obj.put("altName", altName);
         obj.put("selectedExeIndex", selectedExeIndex);
         obj.put("selectedSteamGameIndex", selectedSteamGameIndex);
         obj.put("execs", new JSONArray(execs));
@@ -49,6 +50,7 @@ public class Game implements IJson {
     @Override
     public boolean init(JSONObject obj) {
         selectedExeIndex = obj.optInt("selectedExeIndex",0);
+        altName = obj.optString("altName",null);
         selectedSteamGameIndex = obj.optInt("selectedSteamGameIndex",0);
         JSONArray execsJson = obj.optJSONArray("execs");
         for (int i = 0; i < execsJson.length(); i++) {
@@ -62,8 +64,6 @@ public class Game implements IJson {
         }
         return true;
     }
-
-
 
     public boolean isReadyToExport() {
         boolean hasExec = getSelectedExe() != null;

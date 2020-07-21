@@ -10,6 +10,7 @@ public abstract class ListTask<T> implements ITask {
 
     protected Consumer<Boolean> finishCallback;
     protected final Logger logger;
+    private Thread thread;
 
     public ListTask(Logger logger) {
         this.logger = logger;
@@ -18,7 +19,7 @@ public abstract class ListTask<T> implements ITask {
     }
 
     public void start(Consumer<Double> tickCallback) {
-        Thread thread = new Thread(() -> {
+         thread = new Thread(() -> {
             List<T> list = this.getList();
             for (int i = 0; i < list.size(); i++) {
                 boolean result;
@@ -35,6 +36,12 @@ public abstract class ListTask<T> implements ITask {
                 }
                 double progress = ((double) (i + 1)) / list.size();
                 tickCallback.accept(progress);
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    logger.log("Thread actually interrupted");
+                    return;
+                }
             }
             this.finishCallback.accept(true);
         });
@@ -50,4 +57,13 @@ public abstract class ListTask<T> implements ITask {
         this.finishCallback = finishCallback;
     }
 
+    @Override
+    public void kill() {
+        if (thread == null)
+        {
+            return;
+        }
+        logger.log(this.getClass().getName() + " interrupted");
+        thread.interrupt();
+    }
 }

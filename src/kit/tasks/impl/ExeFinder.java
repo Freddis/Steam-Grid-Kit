@@ -41,9 +41,10 @@ public class ExeFinder extends GameTask {
         this.searchForExecs(gameDir,execs);
         ArrayList<File> clean = this.cleanupExecs(execs);
 
+        String compareToName = game.getAltName() != null ? game.getAltName() :  game.getDirectory();
         clean.sort((a, b) -> {
-            double aResult = StringHelper.strippedSimilarity(game.getDirectory(),a.getName());
-            double bResult = StringHelper.strippedSimilarity(game.getDirectory(),b.getName());
+            double aResult = StringHelper.strippedSimilarity(compareToName,a.getName());
+            double bResult = StringHelper.strippedSimilarity(compareToName,b.getName());
             if(aResult == bResult)
             {
                 return  0;

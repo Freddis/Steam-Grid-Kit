@@ -3,6 +3,7 @@ package views.options;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.Stage;
 import kit.Config;
 import kit.utils.JsonHelper;
 import kit.utils.Logger;
@@ -25,12 +26,12 @@ public class OptionsController {
         this.logger = logger;
         this.jsonHelper = new JsonHelper(logger);
         loadCommaSeparatedValues(settings,"ignoredExecNames",textAreaIgnoredExecutableNames);
-        loadCommaSeparatedValues(settings,"ignoredFolderNames",textAreaIgnoredFolderNames);
     }
     public void saveOptions(MouseEvent mouseEvent) {
         addCommaSeparatedValues(settings,"ignoredExecNames",textAreaIgnoredExecutableNames);
-        addCommaSeparatedValues(settings,"ignoredFolderNames",textAreaIgnoredFolderNames);
         jsonHelper.writeJsonToFile(Config.getPropsJsonFilePath(),settings);
+        Stage stage = (Stage) textAreaIgnoredExecutableNames.getScene().getWindow();
+        stage.close();
     }
 
     private void loadCommaSeparatedValues(JSONObject obj, String key, TextArea textArea) {

@@ -81,4 +81,9 @@ public class GameFolderFinder implements ITask {
         settings.put(Config.Keys.GAMES.getKey(), jsonHelper.toJsonArray(list.toArray(new Game[]{})));
         this.finishCallback.accept(true);
     }
+
+    @Override
+    public void kill() {
+        logger.log("Reading directories is not killable. I bet you will never read this message.");
+    }
 }

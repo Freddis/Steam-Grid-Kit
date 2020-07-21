@@ -43,6 +43,8 @@ public class MainFormController {
     @FXML
     public TableColumn<Game, VBox> tableColumnActions;
     @FXML
+    public Button buttonShowOptions;
+    @FXML
     private ChoiceBox<String> choiceBoxTask;
     @FXML
     private Node container;
@@ -67,24 +69,28 @@ public class MainFormController {
     @FXML
     public CheckBox checkboxUseCache;
 
-    private Stage optionsWindow;
     private final ArrayList<Game> games = new ArrayList<>();
     private JSONObject settings;
     private Logger logger;
     private JsonHelper jsonHelper;
     private Progress progress;
     private final ImageCache images = new ImageCache();
+    private Queue<ITask> runningTasks;
+    private ITask runningTask;
+    private int runningTasksSize;
+    private int runningTaskNumber;
 
     @FXML
     public void initialize() {
-        this.logger = new Logger(this.textAreaLog);
-        this.jsonHelper = new JsonHelper(this.logger);
-        progress = new Progress(labelProgress, progressBar, new Node[]{
-                buttonStart,
+        logger = new Logger(this.textAreaLog);
+        jsonHelper = new JsonHelper(logger);
+        progress = new Progress(logger, labelProgress, progressBar, new Node[]{
                 buttonSelectGamesDirectory,
                 buttonSelectShortcutsFile,
+                buttonShowOptions,
                 checkboxUseCache,
-        });
+                choiceBoxTask,
+        }, buttonStart, this::start, this::stop);
         logger.log("App started");
         settings = jsonHelper.readJsonFromFile(Config.getPropsJsonFilePath());
         this.initControls(settings);
@@ -119,12 +125,11 @@ public class MainFormController {
     private void reCacheImages() {
         logger.log("Re-caching thumbnails");
         images.clear();
-        for(Game game : games)
-        {
-            images.getImageView(game.getHeaderImageFile(),tableColumnImageHeader.widthProperty());
-            images.getImageView(game.getBackgroundImageFile(),tableColumnImageHeader.widthProperty());
-            images.getImageView(game.getLogoImageFile(),tableColumnImageHeader.widthProperty());
-            images.getImageView(game.getCoverImageFile(),tableColumnImageCover.widthProperty());
+        for (Game game : games) {
+            images.getImageView(game.getHeaderImageFile(), tableColumnImageHeader.widthProperty());
+            images.getImageView(game.getBackgroundImageFile(), tableColumnImageHeader.widthProperty());
+            images.getImageView(game.getLogoImageFile(), tableColumnImageHeader.widthProperty());
+            images.getImageView(game.getCoverImageFile(), tableColumnImageCover.widthProperty());
         }
     }
 
@@ -143,15 +148,18 @@ public class MainFormController {
             return new SimpleObservableValue<>(() -> String.valueOf(number));
         });
         tableColumnGame.setCellValueFactory(param -> new SimpleObservableValue<>(() -> {
-
-            String start = param.getValue().getDirectory() + "\n";
-            if (param.getValue().getSelectedSteamGame() != null) {
-                start += param.getValue().getSelectedSteamGame().getAppId() + "\n";
-                start += param.getValue().getSelectedSteamGame().getName() + "\n";
+            Game game = param.getValue();
+            String start = game.getDirectory() + "\n";
+            if (game.getAltName() != null) {
+                start += "(" + game.getAltName() + ")\n";
+            }
+            if (game.getSelectedSteamGame() != null) {
+                start += game.getSelectedSteamGame().getAppId() + "\n";
+                start += game.getSelectedSteamGame().getName() + "\n";
             } else {
                 start += "None \nNone \n";
             }
-            start += param.getValue().getExecName();
+            start += game.getExecName();
             return start;
         }));
         tableColumnExecs.setCellValueFactory(param -> new SimpleObservableValue<>(() -> {
@@ -177,10 +185,13 @@ public class MainFormController {
             button.setText("Edit");
             button.onMouseClickedProperty().setValue(event -> showInfoWindow(item.getValue()));
             button.setPrefWidth(100);
+            button.disableProperty().bind(progress.getIsRunningProperty());
+
             Button button2 = new Button();
             button2.setText("Update");
             button2.onMouseClickedProperty().setValue(event -> updateGame(item.getValue()));
             button2.setPrefWidth(100);
+            button2.disableProperty().bind(progress.getIsRunningProperty());
             VBox box = new VBox(button, button2);
             box.setSpacing(10);
             return box;
@@ -211,25 +222,25 @@ public class MainFormController {
                 new SteamImageLoader(logger, settings),
         };
         Arrays.stream(tasks).forEach(el -> el.setGame(game));
+        Arrays.stream(tasks).forEach(el -> el.setUseCache(false));
         runTasks(tasks, true);
     }
 
     public void showOptionsWindow() {
         logger.log("Showing options");
-        if (optionsWindow == null) {
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/options/options.fxml"));
-                Stage stage = loader.load();
-                OptionsController ctrl = loader.getController();
-                ctrl.initializeSettings(logger, settings);
-                optionsWindow = stage;
-            } catch (Exception e) {
-                logger.log("Couldn't create new window");
-            }
-            optionsWindow.show();
-            optionsWindow.setOnCloseRequest(event -> optionsWindow = null);
+        Stage stage;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/options/options.fxml"));
+            stage = loader.load();
+            OptionsController ctrl = loader.getController();
+            ctrl.initializeSettings(logger, settings);
+        } catch (Exception e) {
+            logger.log("Couldn't create new window");
+            return;
         }
-        optionsWindow.requestFocus();
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.initOwner(container.getScene().getWindow());
+        stage.show();
     }
 
     private void showInfoWindow(Game game) {
@@ -286,19 +297,38 @@ public class MainFormController {
     }
 
     public void runTasks(Queue<ITask> queue, boolean updateTables) {
-        ITask task = queue.poll();
-        if (task == null) {
+
+        if (runningTasks == null) {
+            runningTasks = queue;
+            runningTasksSize = queue.size();
+            runningTaskNumber = 1;
+        }
+        if (runningTasks != queue) {
+            logger.log("Can't run a task if another task is running");
             return;
         }
-        this.progress.startTask(task.getStatusString() + "...");
+
+        ITask task = queue.poll();
+        if (task == null) {
+            runningTasks = null;
+            logger.log("Tasks are done");
+            return;
+        }
+
+        runningTask = task;
+        progress.startTask(runningTaskNumber + "/" + runningTasksSize + ": " + task.getStatusString() + "...");
+        runningTaskNumber++;
+
         task.onFinish((status) -> {
-            progress.endTask();
+            progress.endTask(progress.getStatus().replace("...", status ? ": Done" : ": Failed"));
             Platform.runLater(() -> {
                 initGames();
                 saveConfigJson();
                 reCacheImages();
             });
-            runTasks(queue, updateTables);
+            if (status) {
+                runTasks(queue, updateTables);
+            }
         });
         task.start(param -> {
             progress.setTaskProgress(param);
@@ -309,6 +339,19 @@ public class MainFormController {
                 });
             }
         });
+    }
+
+    private void stopTasks() {
+        if (runningTasks == null) {
+            logger.log("No tasks to stop");
+        }
+        runningTask.kill();
+        progress.endTask(progress.getStatus().replace("...", ": Stopped"));
+        this.runningTasks = null;
+        this.runningTask = null;
+        initGames();
+        saveConfigJson();
+        reCacheImages();
     }
 
     private void saveConfigJson() {
@@ -359,4 +402,9 @@ public class MainFormController {
         }
         this.runTasks(tasks.toArray(new ITask[0]), update);
     }
+
+    private void stop() {
+        this.stopTasks();
+    }
+
 }

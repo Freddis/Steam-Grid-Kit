@@ -34,15 +34,22 @@ public class GameController {
         JsonHelper helper = new JsonHelper(logger);
         ArrayList<Game> games = helper.toList(Game::new, settings.getJSONArray(Config.Keys.GAMES.getKey()));
 
-        String newExe = game.getExecs().get(choiceBoxExec.getSelectionModel().getSelectedIndex());
-        game.setSelectedExe(newExe);
-
-        SteamGame newGame = game.getFoundSteamGames().get(choiceBoxGame.getSelectionModel().getSelectedIndex());
-        game.setSelectedSteamGame(newGame);
-
-        if(textFieldAltName.getText() != null && !textFieldAltName.getText().trim().isEmpty())
+        if(game.getExecs().size() > 0)
         {
-            game.setAltName(textFieldAltName.getText().trim());
+            String newExe = game.getExecs().get(choiceBoxExec.getSelectionModel().getSelectedIndex());
+            game.setSelectedExe(newExe);
+        }
+
+        if(game.getFoundSteamGames().size() > 0)
+        {
+            SteamGame newGame = game.getFoundSteamGames().get(choiceBoxGame.getSelectionModel().getSelectedIndex());
+            game.setSelectedSteamGame(newGame);
+        }
+
+        if(textFieldAltName.getText() != null)
+        {
+            String val = textFieldAltName.getText().trim();
+            game.setAltName(val.isEmpty() ? null : val);
         }
 
 

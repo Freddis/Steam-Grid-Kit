@@ -8,4 +8,6 @@ public interface ITask {
     void onFinish(Consumer<Boolean> finishCallback);
 
     void start(Consumer<Double> tickCallback);
+
+    void kill();
 }

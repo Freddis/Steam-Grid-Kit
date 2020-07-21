@@ -53,6 +53,10 @@ public class JsonHelper {
 
     public String[] toStringArray(JSONArray arr)
     {
+        if(arr == null)
+        {
+            return new String[]{};
+        }
         String[] result = new String[arr.length()];
         for(int i =0; i < arr.length(); i++)
         {
@@ -64,6 +68,10 @@ public class JsonHelper {
 
     public <T extends IJson> ArrayList<T> toList(Callback<JSONObject,T> factory, JSONArray array) {
         ArrayList<T> result = new ArrayList<>();
+        if(array == null)
+        {
+            return result;
+        }
         for(int i = 0; i < array.length(); i++)
         {
             JSONObject obj = array.optJSONObject(i);
