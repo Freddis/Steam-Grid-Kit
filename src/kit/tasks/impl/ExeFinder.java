@@ -25,29 +25,33 @@ public class ExeFinder extends GameTask {
     @Override
     protected boolean processGame(Game game) {
 
-        if(game.getExecs().size() > 0 && this.useCache)
-        {
+        if (game.getExecs().size() > 0 && this.useCache) {
             logger.log("Using cached data for " + game.getDirectory());
             return true;
         }
 
-        File gameDir = new File(folder,game.getDirectory());
-        if(!gameDir.canRead())
-        {
+        File gameDir = new File(folder, game.getDirectory());
+        if (!gameDir.canRead()) {
             logger.log("Can't read directory");
             return false;
         }
         ArrayList<File> execs = new ArrayList<>();
-        this.searchForExecs(gameDir,execs);
+
+        try {
+            this.searchForExecs(gameDir, execs);
+        } catch (InterruptedException e) {
+            logger.log("Interrupted really");
+            return false;
+        }
+
         ArrayList<File> clean = this.cleanupExecs(execs);
 
-        String compareToName = game.getAltName() != null ? game.getAltName() :  game.getDirectory();
+        String compareToName = game.getAltName() != null ? game.getAltName() : game.getDirectory();
         clean.sort((a, b) -> {
-            double aResult = StringHelper.strippedSimilarity(compareToName,a.getName());
-            double bResult = StringHelper.strippedSimilarity(compareToName,b.getName());
-            if(aResult == bResult)
-            {
-                return  0;
+            double aResult = StringHelper.strippedSimilarity(compareToName, a.getName());
+            double bResult = StringHelper.strippedSimilarity(compareToName, b.getName());
+            if (aResult == bResult) {
+                return 0;
             }
             return aResult > bResult ? -1 : 1;
         });
@@ -59,9 +63,8 @@ public class ExeFinder extends GameTask {
         return true;
     }
 
-    private ArrayList<File> cleanupExecs(ArrayList<File> execs)
-    {
-        String[] excluded = new String[] {"launcher", "unins", "handler", "lngs"};
+    private ArrayList<File> cleanupExecs(ArrayList<File> execs) {
+        String[] excluded = new String[]{"launcher", "unins", "handler", "lngs"};
         ArrayList<File> filtered = new ArrayList<>();
         for (File exec : execs) {
             boolean skip = false;
@@ -81,7 +84,9 @@ public class ExeFinder extends GameTask {
         return filtered;
     }
 
-    private void searchForExecs(File dir, ArrayList<File> execs) {
+    private void searchForExecs(File dir, ArrayList<File> execs) throws InterruptedException {
+        //Passing control
+        Thread.sleep(0);
         File[] files = dir.listFiles();
         logger.log("Processing " + dir.getAbsolutePath());
         Queue<File> dirs = new LinkedList<>();
@@ -99,9 +104,8 @@ public class ExeFinder extends GameTask {
                 execs.add(file);
             }
         }
-        while(dirs.peek() != null)
-        {
-            searchForExecs(dirs.poll(),execs);
+        while (dirs.peek() != null) {
+            searchForExecs(dirs.poll(), execs);
         }
     }
 

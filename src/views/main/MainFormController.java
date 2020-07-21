@@ -398,6 +398,9 @@ public class MainFormController {
             case ALL:
                 tasks.add(new GameFolderFinder(logger, settings));
                 tasks.add(new ExeFinder(logger, settings));
+                tasks.add(new SteamGamesLoader(logger, settings));
+                tasks.add(new SteamIdFinder(logger, settings));
+                tasks.add(new SteamImageLoader(logger, settings));
                 break;
         }
         this.runTasks(tasks.toArray(new ITask[0]), update);
