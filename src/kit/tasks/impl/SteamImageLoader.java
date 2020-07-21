@@ -19,9 +19,9 @@ public class SteamImageLoader extends GameTask {
 
     @Override
     protected boolean processGame(Game game) {
-        if (game.getSteamId() == null || game.getSteamId().isEmpty()) {
+        if (game.getSelectedSteamGame() == null) {
             logger.log("Steam id not found, skipping");
-            return false;
+            return true;
         }
         File imageDir = new File(Config.getImageDirectory());
         if (!imageDir.exists()) {
@@ -44,7 +44,7 @@ public class SteamImageLoader extends GameTask {
 
         String[] imageNames = new String[]{"header.jpg", "library_600x900.jpg", "library_hero.jpg", "logo.png"};
         for (String imageName : imageNames) {
-            String path = "https://steamcdn-a.akamaihd.net/steam/apps/" + game.getSteamId() + "/" + imageName;
+            String path = "https://steamcdn-a.akamaihd.net/steam/apps/" + game.getSelectedSteamGame().getAppId() + "/" + imageName;
             logger.log("Loading " + path);
             File file = new File(gameDir, imageName);
             if (file.exists() && !file.delete()) {

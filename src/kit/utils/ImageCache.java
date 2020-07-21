@@ -36,4 +36,8 @@ public class ImageCache {
         cache.put(file,view);
         return view;
     }
+
+    public void clear() {
+        cache.clear();
+    }
 }

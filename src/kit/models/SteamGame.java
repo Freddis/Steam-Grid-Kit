@@ -5,8 +5,8 @@ import org.json.JSONObject;
 
 public class SteamGame implements IJson {
 
-    int appId;
-    String name;
+    private int appId;
+    private String name;
 
     public SteamGame(JSONObject json) {
         this.init(json);
@@ -37,5 +37,9 @@ public class SteamGame implements IJson {
 
     public int getAppId() {
         return appId;
+    }
+
+    public String getSteamPageUrl() {
+        return "https://store.steampowered.com/app/" + this.getAppId();
     }
 }

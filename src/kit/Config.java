@@ -13,6 +13,7 @@ public class Config {
         return getJarPath() + "/steam.json";
     }
 
+
     public static String getImageDirectory() {
         return getJarPath() + "/images";
     }

@@ -11,15 +11,18 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import kit.Config;
 import kit.interfaces.ITask;
 import kit.models.Game;
+import kit.tasks.GameTask;
 import kit.tasks.impl.*;
 import kit.utils.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import views.game.GameController;
 import views.options.OptionsController;
 
 import java.io.File;
@@ -30,11 +33,7 @@ public class MainFormController {
     @FXML
     public TableColumn<Game, String> tableColumnNumber;
     @FXML
-    public TableColumn<Game, String> tableColumnDirectory;
-    @FXML
     public TableColumn<Game, String> tableColumnGame;
-    @FXML
-    public TableColumn<Game, String> tableColumnSteamId;
     @FXML
     public TableColumn<Game, String> tableColumnExecs;
     @FXML
@@ -42,9 +41,7 @@ public class MainFormController {
     @FXML
     public TableColumn<Game, ImageView> tableColumnImageCover;
     @FXML
-    public TableColumn<Game, ImageView> tableColumnImageBackground;
-    @FXML
-    public TableColumn<Game, ImageView> tableColumnImageLogo;
+    public TableColumn<Game, VBox> tableColumnActions;
     @FXML
     private ChoiceBox<String> choiceBoxTask;
     @FXML
@@ -76,7 +73,7 @@ public class MainFormController {
     private Logger logger;
     private JsonHelper jsonHelper;
     private Progress progress;
-    private ImageCache images = new ImageCache();
+    private final ImageCache images = new ImageCache();
 
     @FXML
     public void initialize() {
@@ -116,6 +113,19 @@ public class MainFormController {
 
         this.initTable();
         this.initGames();
+        this.reCacheImages();
+    }
+
+    private void reCacheImages() {
+        logger.log("Re-caching thumbnails");
+        images.clear();
+        for(Game game : games)
+        {
+            images.getImageView(game.getHeaderImageFile(),tableColumnImageHeader.widthProperty());
+            images.getImageView(game.getBackgroundImageFile(),tableColumnImageHeader.widthProperty());
+            images.getImageView(game.getLogoImageFile(),tableColumnImageHeader.widthProperty());
+            images.getImageView(game.getCoverImageFile(),tableColumnImageCover.widthProperty());
+        }
     }
 
     private void initGames() {
@@ -132,16 +142,18 @@ public class MainFormController {
             int number = tableGames.getItems().indexOf(param.getValue()) + 1;
             return new SimpleObservableValue<>(() -> String.valueOf(number));
         });
+        tableColumnGame.setCellValueFactory(param -> new SimpleObservableValue<>(() -> {
 
-//        tableColumnDirectory.setCellValueFactory(param -> new SimpleObservableValue<>(() -> param.getValue().getDirectory() + "\n" + param.getValue().getSteamId() + "\n" + param.getValue().getName()));
-//        tableColumnGame.setCellValueFactory(param -> new SimpleObservableValue<>(() -> param.getValue().getName()));
-        tableColumnGame.setCellValueFactory(param -> new SimpleObservableValue<>(() ->
-                param.getValue().getDirectory() + "\n"
-                        + param.getValue().getSteamId() + "\n"
-                        + param.getValue().getName() + "\n"
-                        + param.getValue().getExecName()
-        ));
-//        tableColumnSteamId.setCellValueFactory(param -> new SimpleObservableValue<>(() -> param.getValue().getSteamId()));
+            String start = param.getValue().getDirectory() + "\n";
+            if (param.getValue().getSelectedSteamGame() != null) {
+                start += param.getValue().getSelectedSteamGame().getAppId() + "\n";
+                start += param.getValue().getSelectedSteamGame().getName() + "\n";
+            } else {
+                start += "None \nNone \n";
+            }
+            start += param.getValue().getExecName();
+            return start;
+        }));
         tableColumnExecs.setCellValueFactory(param -> new SimpleObservableValue<>(() -> {
             StringBuilder result = new StringBuilder();
             ArrayList<String> files = param.getValue().getExecs();
@@ -160,8 +172,19 @@ public class MainFormController {
             return new VBox(filtered);
         }));
         tableColumnImageCover.setCellValueFactory(item -> new SimpleObservableValue<>(() -> images.getImageView(item.getValue().getCoverImageFile(), tableColumnImageCover.widthProperty())));
-//        tableColumnImageBackground.setCellValueFactory(item -> new SimpleObservableValue<>(() -> images.getImageView(item.getValue().getBackgroundImageFile(), tableColumnImageBackground.widthProperty())));
-//        tableColumnImageLogo.setCellValueFactory(item -> new SimpleObservableValue<>(() -> images.getImageView(item.getValue().getLogoImageFile(), tableColumnImageLogo.widthProperty())));
+        tableColumnActions.setCellValueFactory(item -> new SimpleObservableValue<>(() -> {
+            Button button = new Button();
+            button.setText("Edit");
+            button.onMouseClickedProperty().setValue(event -> showInfoWindow(item.getValue()));
+            button.setPrefWidth(100);
+            Button button2 = new Button();
+            button2.setText("Update");
+            button2.onMouseClickedProperty().setValue(event -> updateGame(item.getValue()));
+            button2.setPrefWidth(100);
+            VBox box = new VBox(button, button2);
+            box.setSpacing(10);
+            return box;
+        }));
 
         tableGames.setRowFactory(new Callback<TableView<Game>, TableRow<Game>>() {
             @Override
@@ -172,11 +195,23 @@ public class MainFormController {
                         super.updateItem(item, empty);
                         if (Objects.nonNull(item) && item.isReadyToExport()) {
                             this.getStyleClass().add("ready-for-export");
+                        } else {
+                            this.getStyleClass().remove("ready-for-export");
                         }
                     }
                 };
             }
         });
+    }
+
+    private void updateGame(Game game) {
+        GameTask[] tasks = new GameTask[]{
+                new ExeFinder(logger, settings),
+                new SteamIdFinder(logger, settings),
+                new SteamImageLoader(logger, settings),
+        };
+        Arrays.stream(tasks).forEach(el -> el.setGame(game));
+        runTasks(tasks, true);
     }
 
     public void showOptionsWindow() {
@@ -195,6 +230,27 @@ public class MainFormController {
             optionsWindow.setOnCloseRequest(event -> optionsWindow = null);
         }
         optionsWindow.requestFocus();
+    }
+
+    private void showInfoWindow(Game game) {
+        logger.log("Showing game info");
+        Stage stage;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/game/game.fxml"));
+            stage = loader.load();
+            GameController ctrl = loader.getController();
+            ctrl.initialize(logger, settings, game, () -> {
+                saveConfigJson();
+                initTable();
+            });
+        } catch (Exception e) {
+            logger.log("Couldn't create new window");
+            return;
+        }
+        stage.setTitle("Edit" + game.getDirectory());
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.initOwner(container.getScene().getWindow());
+        stage.show();
     }
 
     public void selectGamesDirectory() {
@@ -240,6 +296,7 @@ public class MainFormController {
             Platform.runLater(() -> {
                 initGames();
                 saveConfigJson();
+                reCacheImages();
             });
             runTasks(queue, updateTables);
         });
@@ -280,7 +337,7 @@ public class MainFormController {
         Config.Task selectedTask = Arrays.stream(Config.Task.values()).filter(task1 -> selectedTaskLabel.equals(task1.getTitle())).findFirst().orElse(Config.Task.ALL);
         switch (selectedTask) {
             case LOAD_STEAM_GAMES:
-                tasks.add(new SteamGamesLoader(logger));
+                tasks.add(new SteamGamesLoader(logger, settings));
                 update = false;
                 break;
             case FIND_GAME_FOLDERS:

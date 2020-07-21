@@ -12,6 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class SteamIdFinder extends GameTask {
@@ -51,7 +52,7 @@ public class SteamIdFinder extends GameTask {
             logger.log("Not enough steam games");
             return false;
         }
-        if(this.useCache && game.getSteamId() != null && !game.getSteamId().isEmpty())
+        if(this.useCache && game.getFoundSteamGames().size() > 0)
         {
              logger.log("Using cached data");
              return true;
@@ -70,14 +71,14 @@ public class SteamIdFinder extends GameTask {
             return o1.getKey() > o2.getKey() ? -1 : 1;
         });
         logger.log("Best matches:");
-        list.subList(0,10).forEach(doubleSteamGamePair -> {
+        List<Pair<Double, SteamGame>> best = list.subList(0, 10);
+        game.getFoundSteamGames().clear();
+        best.forEach(doubleSteamGamePair -> {
+            game.getFoundSteamGames().add(doubleSteamGamePair.getValue());
             String rating = doubleSteamGamePair.getKey().toString();
             String msg = doubleSteamGamePair.getValue().getName() + "(" + doubleSteamGamePair.getValue().getAppId() + "): " + rating.substring(0,Math.min(4,rating.length()));
             logger.log(msg);
         });
-        SteamGame bestGame = list.get(0).getValue();
-        game.setName(bestGame.getName());
-        game.setSteamId(bestGame.getAppId());
         return true;
     }
 

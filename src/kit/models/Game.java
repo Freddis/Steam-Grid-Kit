@@ -1,23 +1,21 @@
 package kit.models;
 
-import javafx.scene.image.Image;
 import kit.Config;
 import kit.interfaces.IJson;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 
 public class Game implements IJson {
 
     private final String directory;
-    private String name;
-    private String steamId;
     private final ArrayList<String> execs = new ArrayList<>();
-    private Image headerImage;
+    private String altName;
+    private final ArrayList<SteamGame> foundSteamGames = new ArrayList<>();
+    private int selectedExeIndex;
+    private int selectedSteamGameIndex;
 
     public Game(JSONObject obj) {
         this(obj.getString("directory"));
@@ -39,43 +37,38 @@ public class Game implements IJson {
     public JSONObject toJson() {
         JSONObject obj = new JSONObject();
         obj.put("directory", directory);
-        obj.put("name", name);
-        obj.put("steamId", steamId);
+        obj.put("selectedExeIndex", selectedExeIndex);
+        obj.put("selectedSteamGameIndex", selectedSteamGameIndex);
         obj.put("execs", new JSONArray(execs));
+        JSONArray foundGamesJson = new JSONArray();
+        foundSteamGames.forEach(el -> foundGamesJson.put(el.toJson()));
+        obj.put("foundSteamGames",foundGamesJson);
         return obj;
     }
 
     @Override
     public boolean init(JSONObject obj) {
-        this.name = obj.optString("name");
-        this.steamId = obj.optString("steamId");
-        JSONArray arr = obj.getJSONArray("execs");
-        for (int i = 0; i < arr.length(); i++) {
-            execs.add(arr.getString(i));
+        selectedExeIndex = obj.optInt("selectedExeIndex",0);
+        selectedSteamGameIndex = obj.optInt("selectedSteamGameIndex",0);
+        JSONArray execsJson = obj.optJSONArray("execs");
+        for (int i = 0; i < execsJson.length(); i++) {
+            execs.add(execsJson.getString(i));
+        }
+        JSONArray gamesJson = obj.optJSONArray("foundSteamGames");
+        gamesJson = gamesJson == null ? new JSONArray() : gamesJson;
+        for (int i = 0; i < gamesJson.length(); i++) {
+            SteamGame game = new SteamGame(gamesJson.getJSONObject(i));
+            foundSteamGames.add(game);
         }
         return true;
     }
 
-    public String getName() {
-        return this.name;
-    }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getSteamId() {
-        return this.steamId;
-    }
-
-    public void setSteamId(int appId) {
-        this.steamId = String.valueOf(appId);
-    }
 
     public boolean isReadyToExport() {
-        @SuppressWarnings("UnnecessaryLocalVariable")
-        boolean ready = this.execs.size() > 0 && this.steamId != null && this.name != null;
-        return ready;
+        boolean hasExec = getSelectedExe() != null;
+        boolean hasImages = getHeaderImageFile() != null && getCoverImageFile() != null && getBackgroundImageFile() != null  && getLogoImageFile() != null;
+        return hasExec && hasImages;
     }
 
     public File getHeaderImageFile() {
@@ -107,5 +100,41 @@ public class Game implements IJson {
         String first = this.getExecs().get(0);
         File file = new File(first);
         return file.getName();
+    }
+
+    public String getAltName() {
+        return this.altName;
+    }
+
+    public ArrayList<SteamGame> getFoundSteamGames() {
+        return this.foundSteamGames;
+    }
+
+    public int getSelectedSteamGameIndex() {
+        return this.selectedSteamGameIndex;
+    }
+
+    public int getSelectedExeIndex() {
+        return this.selectedExeIndex;
+    }
+    public String getSelectedExe() {
+        return execs.size() > selectedExeIndex ? execs.get(selectedExeIndex) : null;
+    }
+    public SteamGame getSelectedSteamGame() {
+        return foundSteamGames.size() > selectedSteamGameIndex ? foundSteamGames.get(selectedSteamGameIndex) : null;
+    }
+
+    public void setSelectedExe(String newExe) {
+        int index = execs.indexOf(newExe);
+        selectedExeIndex = index != -1 ? index : 0;
+    }
+
+    public void setSelectedSteamGame(SteamGame game) {
+        int index = foundSteamGames.indexOf(game);
+        selectedSteamGameIndex = index != -1 ? index : 0;
+    }
+
+    public void setAltName(String name) {
+        altName = name;
     }
 }
