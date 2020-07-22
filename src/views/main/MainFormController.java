@@ -8,6 +8,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -490,4 +491,8 @@ public class MainFormController {
         this.stopTasks();
     }
 
+    public void transfer(MouseEvent mouseEvent) {
+        ITask[] tasks = { new CreateVdfFile(logger, settings)};
+        runTasks(tasks, true);
+    }
 }

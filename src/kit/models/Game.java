@@ -75,16 +75,30 @@ public class Game implements IJson {
     }
 
     public File getHeaderImageFile() {
-        return this.returnFileIfExists(Config.getImageDirectory() + "/" + this.getDirectory() + "/header.jpg");
+        return this.returnFileIfExists(Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/header.jpg");
     }
     public File getCoverImageFile() {
-        return this.returnFileIfExists(Config.getImageDirectory() + "/" + this.getDirectory() + "/library_600x900.jpg");
+        return this.returnFileIfExists(Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/library_600x900.jpg");
     }
     public File getBackgroundImageFile() {
-        return this.returnFileIfExists(Config.getImageDirectory() + "/" + this.getDirectory() + "/library_hero.jpg");
+        return this.returnFileIfExists(Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/library_hero.jpg");
     }
     public File getLogoImageFile() {
-        return this.returnFileIfExists(Config.getImageDirectory() + "/" + this.getDirectory() + "/logo.png");
+        return this.returnFileIfExists(Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/logo.png");
+    }
+
+    public String getImageDirectoryName() {
+        return  this.getDirectory().replaceAll("[^A-Za-z0-9 ]","");
+    }
+
+    public String getExecName() {
+        String exec = getSelectedExe();
+        if(exec != null)
+        {
+            return null;
+        }
+        String[] parts = exec.split("\\\\");
+        return parts[parts.length-1];
     }
 
     protected File returnFileIfExists(String path) {
@@ -95,15 +109,6 @@ public class Game implements IJson {
         return file;
     }
 
-    public String getExecName() {
-        if(this.getExecs().size() == 0)
-        {
-            return null;
-        }
-        String first = this.getExecs().get(0);
-        File file = new File(first);
-        return file.getName();
-    }
 
     public String getAltName() {
         return this.altName;

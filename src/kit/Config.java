@@ -13,6 +13,10 @@ public class Config {
         return getJarPath() + "/steam.json";
     }
 
+    public static String getVdfBackupFolder() {
+        return getJarPath() + "/backups";
+    }
+
     public static String getVdfFilePath() {
         return getJarPath() + "/shortcuts.vdf";
     }
@@ -41,6 +45,7 @@ public class Config {
             return ".";
         }
     }
+
 
     public enum Keys {
         GAMES_DIRECTORY_PATH("gamesDirectory"),

@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -67,7 +66,7 @@ public class ShortcutParser implements ITask {
             JSONObject row = data.getJSONObject(i);
             Game game =  this.createGame(row,gamePath);
             Optional<Game> original = Arrays.stream(games.toArray(new Game[0])).filter(g -> g.isTheSame(game)).findFirst();
-            boolean gameIgnored = Arrays.stream(ignored).anyMatch(str -> Objects.equals(str, game.getDirectory()));
+            boolean gameIgnored = Arrays.stream(ignored).anyMatch(str -> str == game.getDirectory());
             if (!original.isPresent() && !gameIgnored) {
                 games.add(game);
             }

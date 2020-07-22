@@ -12,11 +12,12 @@
             <VBox fx:id="container" minHeight="600.0" minWidth="1200.0">
                 <SplitPane dividerPositions="0.2838063439065108" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
                     <SplitPane dividerPositions="0.3411371237458194" maxWidth="600.0" minWidth="336.0" orientation="VERTICAL" prefHeight="598.0" prefWidth="352.0">
-                        <AnchorPane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="200.0" style="-fx-border-width: 0;" SplitPane.resizableWithParent="false">
+                        <AnchorPane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="230.0" style="-fx-border-width: 0;" SplitPane.resizableWithParent="false">
                             <padding>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                             </padding>
-                            <CheckBox fx:id="checkboxUseCache" mnemonicParsing="false" onMouseClicked="#toggleUseCache" selected="true" text="Use Cached Data" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="110.0" />
+                     <Button onMouseClicked="#transfer" mnemonicParsing="false" prefWidth="80.0" text="Transfer" AnchorPane.bottomAnchor="60.0" AnchorPane.rightAnchor="0.0" />
+                            <CheckBox fx:id="checkboxUseCache" mnemonicParsing="false" onMouseClicked="#toggleUseCache" selected="true" text="Use Cached Data" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="130.0" />
                             <TextField fx:id="textFieldShortcutsFile" disable="true" editable="false" prefHeight="27.0" prefWidth="332.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="20.0" />
                             <Button fx:id="buttonSelectShortcutsFile" mnemonicParsing="false" onMouseClicked="#selectShortcutFile" prefHeight="27.0" prefWidth="80.0" text="Browse" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="20.0" />
                             <Button fx:id="buttonSelectGamesDirectory" mnemonicParsing="false" onMouseClicked="#selectGamesDirectory" prefHeight="27.0" prefWidth="80.0" text="Browse" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="75.0" />

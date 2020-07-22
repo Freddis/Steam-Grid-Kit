@@ -32,12 +32,14 @@ public class SteamImageLoader extends GameTask {
                 return false;
             }
         }
-        File gameDir = new File(imageDir, game.getDirectory());
+
+        String gameImageDir = game.getImageDirectoryName();
+        File gameDir = new File(imageDir, gameImageDir);
         if (!gameDir.exists()) {
             logger.log("Attempting to create game dir: " + gameDir.getAbsolutePath());
             boolean result = gameDir.mkdir();
             if (!result) {
-                logger.log("Could not create directory");
+                logger.log("Could not create directory" );
                 return false;
             }
         }
@@ -56,6 +58,7 @@ public class SteamImageLoader extends GameTask {
                 return false;
             }
             try {
+                logger.log("Writing to "+ file.getAbsolutePath());
                 URL url = new URL(path);
                 HttpURLConnection httpConnection = (HttpURLConnection) (url.openConnection());
                 BufferedInputStream in = new BufferedInputStream(httpConnection.getInputStream());
