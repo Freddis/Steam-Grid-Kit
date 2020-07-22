@@ -159,4 +159,8 @@ public class Game implements IJson {
     public boolean isLocatedIn(String path) {
         return getSelectedExe() != null && getSelectedExe().indexOf(path) == 0;
     }
+
+    public void wipe() {
+        foundSteamGames.clear();
+    }
 }

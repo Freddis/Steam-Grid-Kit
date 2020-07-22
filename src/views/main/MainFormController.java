@@ -27,6 +27,7 @@ import views.options.OptionsController;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class MainFormController {
@@ -201,7 +202,6 @@ public class MainFormController {
         }));
         tableColumnImageCover.setCellValueFactory(item -> new SimpleObservableValue<>(() -> images.getImageView(item.getValue().getCoverImageFile(), tableColumnImageCover.widthProperty())));
         tableColumnActions.setCellValueFactory(item -> new SimpleObservableValue<>(() -> {
-
             String[] names = {"Edit","Update","Wipe","Ignore"};
             Button[] buttons = new Button[names.length];
             for(int i =0; i < names.length; i++)
@@ -211,9 +211,10 @@ public class MainFormController {
                 button.disableProperty().bind(progress.getIsRunningProperty());
                 buttons[i] = button;
             }
-
             buttons[0].onMouseClickedProperty().setValue(event -> showInfoWindow(item.getValue()));
             buttons[1].onMouseClickedProperty().setValue(event -> updateGame(item.getValue()));
+            buttons[2].onMouseClickedProperty().setValue(event -> wipeGame(item.getValue()));
+            buttons[3].onMouseClickedProperty().setValue(event -> ignoreGame(item.getValue()));
             VBox box = new VBox(buttons);
             box.setSpacing(10);
             return box;
@@ -235,6 +236,56 @@ public class MainFormController {
                 };
             }
         });
+    }
+
+    private void ignoreGame(Game game) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Ignoring game");
+        alert.setHeaderText("");
+        alert.setContentText("Are you sure you want to delete this game from the list and add its folder to ignored list?");
+        Optional<ButtonType> result = alert.showAndWait();
+        if(result.isPresent() && result.get() == ButtonType.OK)
+        {
+            logger.log("Deleting game: " + game.getDirectory());
+            games.remove(game);
+            JSONArray ignoredGames = settings.getJSONArray(Config.Keys.IGNORED_FOLDERS_NAMES.getKey());
+            ignoredGames = ignoredGames != null ? ignoredGames : new JSONArray();
+            ignoredGames.put(game.getDirectory());
+
+            saveConfigJson();
+            initTable();
+        }
+    }
+
+    private void wipeGame(Game game) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Wiping game");
+        alert.setHeaderText("");
+        alert.setContentText("Are you sure you want to clear images and steam ids for the game?");
+        Optional<ButtonType> result = alert.showAndWait();
+        if(result.isPresent() && result.get() == ButtonType.OK)
+        {
+            logger.log("Wiping game: " + game.getDirectory());
+            game.wipe();
+            File imageFolder = new File(Config.getImageDirectory());
+            File gameImageFolder = new File(imageFolder, game.getDirectory());
+            boolean deleteResult = true;
+            try {
+                File[] files = gameImageFolder.listFiles();
+                if (files != null) {
+                    deleteResult &= Arrays.stream(files).map(File::delete).collect(Collectors.toSet()).stream().allMatch(res -> res == true);
+                }
+                deleteResult &= gameImageFolder.delete();
+            }catch (Exception e)
+            {
+                deleteResult = false;
+                logger.log("Something went wrong: " + e.getMessage());
+            }
+            logger.log("Delete result: " + (deleteResult ? "true" : "false"));
+            saveConfigJson();
+            initTable();
+            reCacheImages();
+        }
     }
 
     private void updateGame(Game game) {
@@ -384,10 +435,7 @@ public class MainFormController {
 
     private void saveConfigJson() {
         logger.log("Saving JSON props");
-        JSONArray arr = new JSONArray();
-        for (Game game : games) {
-            arr.put(game.toJson());
-        }
+        JSONArray arr =  jsonHelper.toJsonArray(games.toArray(new Game[0]));
         settings.put(Config.Keys.GAMES.getKey(), arr);
         settings.put(Config.Keys.VDF_FILE.getKey(), textFieldShortcutsFile.getText());
         settings.put(Config.Keys.GAMES_DIRECTORY_PATH.getKey(), textFieldGamesDirectory.getText());
