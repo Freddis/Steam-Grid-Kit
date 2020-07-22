@@ -45,9 +45,10 @@ public class GameFolderFinder implements ITask {
         }
         JsonHelper jsonHelper = new JsonHelper(this.logger);
         boolean useCache = settings.optBoolean(Config.Keys.USE_CACHE.getKey(), false);
-        String[] ignored = jsonHelper.toStringArray(settings.optJSONArray("ignoredFolderNames"));
+        String[] ignored = jsonHelper.toStringArray(settings.optJSONArray(Config.Keys.IGNORED_FOLDERS_NAMES.getKey()));
         File[] files = dir.listFiles();
-        ArrayList<Game> list = new ArrayList<>();
+//        ArrayList<Game> list = new ArrayList<>();
+        ArrayList<Game> list = jsonHelper.toList(Game::new, settings.optJSONArray(Config.Keys.GAMES.getKey()));
         //I don't think the next might happen, but better safe than sorry, right?
         if (files == null) {
             logger.log("Couldn't obtain files");
@@ -64,18 +65,15 @@ public class GameFolderFinder implements ITask {
                 continue;
             }
             Game game = new Game(file.getName());
+
             //If we already have the information about the game, it's better we just swap the game with the cached data
-            if (useCache) {
-                List<Game> existingGames = jsonHelper.toList(Game::new, settings.optJSONArray(Config.Keys.GAMES.getKey()));
-                for (Game el : existingGames) {
-                    if (game.getDirectory().equals(el.getDirectory())) {
-                        logger.log("Found cache for " + game.getDirectory());
-                        game = el;
-                        break;
-                    }
+            for (Game el : list.toArray(new Game[0])) {
+                if (game.isTheSame(el)) {
+                    logger.log("Found cache for " + game.getDirectory());
+                    continue;
                 }
+                list.add(game);
             }
-            list.add(game);
         }
 
         settings.put(Config.Keys.GAMES.getKey(), jsonHelper.toJsonArray(list.toArray(new Game[]{})));

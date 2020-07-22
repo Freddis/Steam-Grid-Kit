@@ -16,6 +16,7 @@ public class Game implements IJson {
     private final ArrayList<SteamGame> foundSteamGames = new ArrayList<>();
     private int selectedExeIndex;
     private int selectedSteamGameIndex;
+    private JSONObject vdf;
 
     public Game(JSONObject obj) {
         this(obj.getString("directory"));
@@ -41,6 +42,7 @@ public class Game implements IJson {
         obj.put("selectedExeIndex", selectedExeIndex);
         obj.put("selectedSteamGameIndex", selectedSteamGameIndex);
         obj.put("execs", new JSONArray(execs));
+        obj.put("vdf",vdf);
         JSONArray foundGamesJson = new JSONArray();
         foundSteamGames.forEach(el -> foundGamesJson.put(el.toJson()));
         obj.put("foundSteamGames",foundGamesJson);
@@ -52,6 +54,7 @@ public class Game implements IJson {
         selectedExeIndex = obj.optInt("selectedExeIndex",0);
         altName = obj.optString("altName",null);
         selectedSteamGameIndex = obj.optInt("selectedSteamGameIndex",0);
+        vdf = obj.optJSONObject("vdf");
         JSONArray execsJson = obj.optJSONArray("execs");
         for (int i = 0; i < execsJson.length(); i++) {
             execs.add(execsJson.getString(i));
@@ -136,5 +139,24 @@ public class Game implements IJson {
 
     public void setAltName(String name) {
         altName = name;
+    }
+
+    public boolean isTheSame(Game game) {
+        if (this.getDirectory().equals(game.getDirectory())) {
+            return true;
+        }
+        return false;
+    }
+
+    public void setVdf(JSONObject obj) {
+        this.vdf = obj;
+    }
+
+    public boolean hasVdf() {
+        return vdf != null;
+    }
+
+    public boolean isLocatedIn(String path) {
+        return getSelectedExe() != null && getSelectedExe().indexOf(path) == 0;
     }
 }

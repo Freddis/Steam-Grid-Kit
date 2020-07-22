@@ -8,10 +8,7 @@ import kit.utils.StringHelper;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Objects;
-import java.util.Queue;
+import java.util.*;
 
 public class ExeFinder extends GameTask {
 
@@ -32,11 +29,11 @@ public class ExeFinder extends GameTask {
 
         File gameDir = new File(folder, game.getDirectory());
         if (!gameDir.canRead()) {
-            logger.log("Can't read directory");
-            return false;
+            logger.log("Can't read directory: " + gameDir.getAbsolutePath());
+            return true;
         }
-        ArrayList<File> execs = new ArrayList<>();
 
+        ArrayList<File> execs = new ArrayList<>();
         try {
             this.searchForExecs(gameDir, execs);
         } catch (InterruptedException e) {
@@ -44,10 +41,8 @@ public class ExeFinder extends GameTask {
             return false;
         }
 
-        ArrayList<File> clean = this.cleanupExecs(execs);
-
         String compareToName = game.getAltName() != null ? game.getAltName() : game.getDirectory();
-        clean.sort((a, b) -> {
+        execs.sort((a, b) -> {
             double aResult = StringHelper.strippedSimilarity(compareToName, a.getName());
             double bResult = StringHelper.strippedSimilarity(compareToName, b.getName());
             if (aResult == bResult) {
@@ -55,34 +50,38 @@ public class ExeFinder extends GameTask {
             }
             return aResult > bResult ? -1 : 1;
         });
+
+
+        String localPath = settings.getString(Config.Keys.LOCAL_GAMES_DIRECTORY_PATH.getKey());
+        ArrayList<String> execPaths = new ArrayList<>();
+
+        if (localPath != null) {
+            execPaths.addAll(convertPathsToLocal(execs, localPath, folder.getAbsolutePath()));
+        } else {
+            for (File exec : execs) {
+                execPaths.add(exec.getAbsolutePath());
+            }
+        }
+
+        String currentExe = game.getExecs().size() > 0 ? game.getSelectedExe() : null;
         game.getExecs().clear();
-        for (File file : clean) {
-            String path = file.getAbsolutePath();
-            game.getExecs().add(path);
+        game.getExecs().addAll(execPaths);
+        if (currentExe != null) {
+            Optional<String> prevExe = Arrays.stream(game.getExecs().toArray(new String[0])).filter(path -> path.equals(currentExe)).findFirst();
+            prevExe.ifPresent(game::setSelectedExe);
         }
         return true;
     }
 
-    private ArrayList<File> cleanupExecs(ArrayList<File> execs) {
-        String[] excluded = new String[]{"launcher", "unins", "handler", "lngs"};
-        ArrayList<File> filtered = new ArrayList<>();
-        for (File exec : execs) {
-            boolean skip = false;
-            for (String s : excluded) {
-                int index = exec.getName().indexOf(s);
-                if (index != -1) {
-                    this.logger.log("Excluded  " + exec.getName());
-                    skip = true;
-                    break;
-                }
-            }
-            if (skip) {
-                continue;
-            }
-            filtered.add(exec);
+    private ArrayList<String> convertPathsToLocal(ArrayList<File> execs, String localPath, String remotePath) {
+        ArrayList<String> result = new ArrayList<>();
+        for (File exe : execs) {
+            String path = exe.getAbsolutePath().replace(remotePath, localPath);
+            result.add(path);
         }
-        return filtered;
+        return result;
     }
+
 
     private void searchForExecs(File dir, ArrayList<File> execs) throws InterruptedException {
         //Passing control
@@ -99,7 +98,7 @@ public class ExeFinder extends GameTask {
             if (extensionPos == -1) {
                 continue;
             }
-            String extension = file.getAbsolutePath().substring(extensionPos);
+            String extension = file.getAbsolutePath().substring(extensionPos).toLowerCase();
             if (extension.equals(".exe")) {
                 execs.add(file);
             }

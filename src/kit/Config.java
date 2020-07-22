@@ -13,6 +13,9 @@ public class Config {
         return getJarPath() + "/steam.json";
     }
 
+    public static String getVdfFilePath() {
+        return getJarPath() + "/shortcuts.vdf";
+    }
 
     public static String getImageDirectory() {
         return getJarPath() + "/images";
@@ -43,7 +46,10 @@ public class Config {
         GAMES_DIRECTORY_PATH("gamesDirectory"),
         GAMES("games"),
         USE_CACHE("useCache"),
-        VDF_FILE("vdfFile");
+        IGNORED_FOLDERS_NAMES("ignoredDirectoryNames"),
+        VDF_FILE("vdfFile"),
+        LOCAL_GAMES_DIRECTORY_PATH("localGamesDirectory"),
+        LOCAL_VDF_PATH("localVdfFile");
 
         private final String key;
 
@@ -58,6 +64,7 @@ public class Config {
 
     public enum Task {
         ALL("All"),
+        FIND_EXISTING_SHORTCUTS("Find Existing Shortcuts"),
         FIND_GAME_FOLDERS("Find Game Folders"),
         LOAD_STEAM_GAMES("Load Steam Games"),
         FIND_EXECUTABLES("Find Executable"),

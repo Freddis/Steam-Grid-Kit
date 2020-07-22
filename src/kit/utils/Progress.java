@@ -16,6 +16,7 @@ public class Progress {
     private final Node[] controls;
     private final Button startButton;
     private final BooleanProperty isRunning = new SimpleBooleanProperty(false);
+    private String status;
 
     public Progress(Logger logger, Label label, ProgressBar bar, Node[] controls, Button startButton, Runnable startRequested, Runnable stopRequested) {
         this.labelProgress = label;
@@ -33,6 +34,7 @@ public class Progress {
 
     public void endTask(String status) {
         isRunning.set(false);
+        this.status = status;
         Platform.runLater(() -> {
             this.toggleControls(true);
             progressBar.setProgress(0.0);
@@ -42,6 +44,7 @@ public class Progress {
     }
 
     public void startTask(String taskStatus) {
+        this.status = taskStatus;
         isRunning.set(true);
         Platform.runLater(() -> {
             this.toggleControls(false);
@@ -70,6 +73,6 @@ public class Progress {
     }
 
     public String getStatus() {
-        return labelProgress.getText();
+        return status;
     }
 }

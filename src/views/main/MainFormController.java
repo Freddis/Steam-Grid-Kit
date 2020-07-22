@@ -33,7 +33,7 @@ public class MainFormController {
     @FXML
     public TableColumn<Game, String> tableColumnNumber;
     @FXML
-    public TableColumn<Game, String> tableColumnGame;
+    public TableColumn<Game, VBox> tableColumnGame;
     @FXML
     public TableColumn<Game, String> tableColumnExecs;
     @FXML
@@ -147,20 +147,40 @@ public class MainFormController {
             int number = tableGames.getItems().indexOf(param.getValue()) + 1;
             return new SimpleObservableValue<>(() -> String.valueOf(number));
         });
+
+        String gamesDir = settings.getString(Config.Keys.GAMES_DIRECTORY_PATH.getKey());
+        String localPath = settings.optString(Config.Keys.LOCAL_GAMES_DIRECTORY_PATH.getKey(),null);
+        String finalGamesDir = localPath != null ? localPath : gamesDir;
         tableColumnGame.setCellValueFactory(param -> new SimpleObservableValue<>(() -> {
+            ArrayList<Node> nodes = new ArrayList<>();
             Game game = param.getValue();
             String start = game.getDirectory() + "\n";
+            nodes.add(new Label(game.getDirectory()));
             if (game.getAltName() != null) {
-                start += "(" + game.getAltName() + ")\n";
+                nodes.add(new Label("("+game.getAltName()+")"));
             }
             if (game.getSelectedSteamGame() != null) {
-                start += game.getSelectedSteamGame().getAppId() + "\n";
-                start += game.getSelectedSteamGame().getName() + "\n";
+                nodes.add(new Label(String.valueOf(game.getSelectedSteamGame().getAppId())));
+                nodes.add(new Label(game.getSelectedSteamGame().getName()));
             } else {
-                start += "None \nNone \n";
+                Label id = new Label("(No Steam App ID)");
+                id.setStyle("-fx-text-fill: orange");
+                nodes.add(id);
             }
-            start += game.getExecName();
-            return start;
+            if(game.hasVdf())
+            {
+                Label label = new Label("Exisitng shortcut");
+                label.setStyle("-fx-text-fill: dodgerblue");
+                nodes.add(label);
+            }
+            if(!game.isLocatedIn(finalGamesDir))
+            {
+                Label label = new Label("Not from the game directory");
+                label.setStyle("-fx-text-fill: orange");
+                nodes.add(label);
+            }
+            nodes.add(new Label(game.getExecName()));
+            return new VBox(nodes.toArray(new Node[0]));
         }));
         tableColumnExecs.setCellValueFactory(param -> new SimpleObservableValue<>(() -> {
             StringBuilder result = new StringBuilder();
@@ -181,18 +201,20 @@ public class MainFormController {
         }));
         tableColumnImageCover.setCellValueFactory(item -> new SimpleObservableValue<>(() -> images.getImageView(item.getValue().getCoverImageFile(), tableColumnImageCover.widthProperty())));
         tableColumnActions.setCellValueFactory(item -> new SimpleObservableValue<>(() -> {
-            Button button = new Button();
-            button.setText("Edit");
-            button.onMouseClickedProperty().setValue(event -> showInfoWindow(item.getValue()));
-            button.setPrefWidth(100);
-            button.disableProperty().bind(progress.getIsRunningProperty());
 
-            Button button2 = new Button();
-            button2.setText("Update");
-            button2.onMouseClickedProperty().setValue(event -> updateGame(item.getValue()));
-            button2.setPrefWidth(100);
-            button2.disableProperty().bind(progress.getIsRunningProperty());
-            VBox box = new VBox(button, button2);
+            String[] names = {"Edit","Update","Wipe","Ignore"};
+            Button[] buttons = new Button[names.length];
+            for(int i =0; i < names.length; i++)
+            {
+                Button button = new Button(names[i]);
+                button.setPrefWidth(100);
+                button.disableProperty().bind(progress.getIsRunningProperty());
+                buttons[i] = button;
+            }
+
+            buttons[0].onMouseClickedProperty().setValue(event -> showInfoWindow(item.getValue()));
+            buttons[1].onMouseClickedProperty().setValue(event -> updateGame(item.getValue()));
+            VBox box = new VBox(buttons);
             box.setSpacing(10);
             return box;
         }));
@@ -233,7 +255,9 @@ public class MainFormController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/options/options.fxml"));
             stage = loader.load();
             OptionsController ctrl = loader.getController();
-            ctrl.initializeSettings(logger, settings);
+            ctrl.initializeSettings(logger, settings,() -> {
+                initGames();
+            });
         } catch (Exception e) {
             logger.log("Couldn't create new window");
             return;
@@ -315,12 +339,14 @@ public class MainFormController {
             return;
         }
 
+        String cmdStatus = runningTaskNumber + "/" + runningTasksSize + ": " + task.getStatusString() + "...";
         runningTask = task;
-        progress.startTask(runningTaskNumber + "/" + runningTasksSize + ": " + task.getStatusString() + "...");
+        progress.startTask(cmdStatus);
         runningTaskNumber++;
 
         task.onFinish((status) -> {
-            progress.endTask(progress.getStatus().replace("...", status ? ": Done" : ": Failed"));
+            String finalStatus = progress.getStatus().replace("...", status ? ": Done" : ": Failed");
+            progress.endTask(finalStatus);
             Platform.runLater(() -> {
                 initGames();
                 saveConfigJson();
@@ -328,6 +354,8 @@ public class MainFormController {
             });
             if (status) {
                 runTasks(queue, updateTables);
+            } else {
+                runningTasks = null;
             }
         });
         task.start(param -> {
@@ -379,6 +407,9 @@ public class MainFormController {
         String selectedTaskLabel = choiceBoxTask.getValue();
         Config.Task selectedTask = Arrays.stream(Config.Task.values()).filter(task1 -> selectedTaskLabel.equals(task1.getTitle())).findFirst().orElse(Config.Task.ALL);
         switch (selectedTask) {
+            case FIND_EXISTING_SHORTCUTS:
+                tasks.add(new ShortcutParser(logger, settings));
+                break;
             case LOAD_STEAM_GAMES:
                 tasks.add(new SteamGamesLoader(logger, settings));
                 update = false;
@@ -396,6 +427,7 @@ public class MainFormController {
                 tasks.add(new SteamImageLoader(logger, settings));
                 break;
             case ALL:
+                tasks.add(new ShortcutParser(logger, settings));
                 tasks.add(new GameFolderFinder(logger, settings));
                 tasks.add(new ExeFinder(logger, settings));
                 tasks.add(new SteamGamesLoader(logger, settings));
