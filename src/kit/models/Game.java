@@ -47,18 +47,18 @@ public class Game implements IJson {
         obj.put("selectedExeIndex", selectedExeIndex);
         obj.put("selectedSteamGameIndex", selectedSteamGameIndex);
         obj.put("execs", new JSONArray(execs));
-        obj.put("vdf",vdf);
+        obj.put("vdf", vdf);
         JSONArray foundGamesJson = new JSONArray();
         foundSteamGames.forEach(el -> foundGamesJson.put(el.toJson()));
-        obj.put("foundSteamGames",foundGamesJson);
+        obj.put("foundSteamGames", foundGamesJson);
         return obj;
     }
 
     @Override
     public boolean init(JSONObject obj) {
-        selectedExeIndex = obj.optInt("selectedExeIndex",0);
-        altName = obj.optString("altName",null);
-        selectedSteamGameIndex = obj.optInt("selectedSteamGameIndex",0);
+        selectedExeIndex = obj.optInt("selectedExeIndex", 0);
+        altName = obj.optString("altName", null);
+        selectedSteamGameIndex = obj.optInt("selectedSteamGameIndex", 0);
         vdf = obj.optJSONObject("vdf");
         JSONArray execsJson = obj.optJSONArray("execs");
         for (int i = 0; i < execsJson.length(); i++) {
@@ -75,43 +75,63 @@ public class Game implements IJson {
 
     public boolean isReadyToExport() {
         boolean hasExec = getSelectedExe() != null;
-        boolean hasImages = getHeaderImageFile() != null && getCoverImageFile() != null && getBackgroundImageFile() != null  && getLogoImageFile() != null;
+        boolean hasImages = getHeaderImageFile() != null && getCoverImageFile() != null && getBackgroundImageFile() != null && getLogoImageFile() != null;
         return hasExec && hasImages;
     }
 
     public File getHeaderImageFile() {
-        return this.returnFileIfExists(Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/header.jpg");
+        String path1 = Config.getSetImagesDirectory() + "/" + this.getId() + "header.jpg";
+        String path2 = Config.getSetImagesDirectory() + "/" + this.getId() + "header.png";
+        String path3 = Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/header.jpg";
+        String[] paths = {path1,path2,path3};
+        return this.returnFileIfExists(paths);
     }
+
     public File getCoverImageFile() {
-        return this.returnFileIfExists(Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/library_600x900.jpg");
+        String path1 = Config.getSetImagesDirectory() + "/" + this.getId() + "p.jpg";
+        String path2 = Config.getSetImagesDirectory() + "/" + this.getId() + "p.png";
+        String path3 = Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/library_600x900.jpg";
+        String[] paths = {path1,path2,path3};
+        return this.returnFileIfExists(paths);
     }
+
     public File getBackgroundImageFile() {
-        return this.returnFileIfExists(Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/library_hero.jpg");
+        String path1 = Config.getSetImagesDirectory() + "/" + this.getId() + "_hero.jpg";
+        String path2 = Config.getSetImagesDirectory() + "/" + this.getId() + "_hero.png";
+        String path3 = Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/library_hero.jpg";
+        String[] paths = {path1,path2,path3};
+        return this.returnFileIfExists(paths);
     }
+
     public File getLogoImageFile() {
-        return this.returnFileIfExists(Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/logo.png");
+        String path1 = Config.getSetImagesDirectory() + "/" + this.getId() + "_logo.png";
+        String path2 = Config.getSetImagesDirectory() + "/" + this.getId() + "_logo.jpg";
+        String path3 = Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/logo.png";
+        String[] paths = {path1,path2,path3};
+        return this.returnFileIfExists(paths);
     }
 
     public String getImageDirectoryName() {
-        return  this.getDirectory().replaceAll("[^A-Za-z0-9 ]","");
+        return this.getDirectory().replaceAll("[^A-Za-z0-9 ]", "");
     }
 
     public String getExecName() {
         String exec = getSelectedExe();
-        if(exec == null)
-        {
+        if (exec == null) {
             return null;
         }
         String[] parts = exec.split("\\\\");
-        return parts[parts.length-1];
+        return parts[parts.length - 1];
     }
 
-    protected File returnFileIfExists(String path) {
-        File file = new File(path);
-        if (!file.exists() || !file.canRead()) {
-            return null;
+    protected File returnFileIfExists(String[] paths) {
+        for (String path : paths) {
+            File file = new File(path);
+            if (file.exists() && file.canRead()) {
+                return file;
+            }
         }
-        return file;
+        return null;
     }
 
 
@@ -130,9 +150,11 @@ public class Game implements IJson {
     public int getSelectedExeIndex() {
         return this.selectedExeIndex;
     }
+
     public String getSelectedExe() {
         return execs.size() > selectedExeIndex ? execs.get(selectedExeIndex) : null;
     }
+
     public SteamGame getSelectedSteamGame() {
         return foundSteamGames.size() > selectedSteamGameIndex ? foundSteamGames.get(selectedSteamGameIndex) : null;
     }
@@ -179,12 +201,10 @@ public class Game implements IJson {
     }
 
     public String getIntendedTitle() {
-        if(this.getSelectedSteamGame() != null)
-        {
+        if (this.getSelectedSteamGame() != null) {
             return this.getSelectedSteamGame().getName();
         }
-        if(this.getAltName() != null && !this.getAltName().isEmpty())
-        {
+        if (this.getAltName() != null && !this.getAltName().isEmpty()) {
             return this.getAltName();
         }
         return this.getDirectory();
@@ -203,7 +223,7 @@ public class Game implements IJson {
         // get the current checksum value
         long checksumValue = checksum.getValue();
         long x = 0x80000000;
-        long res = checksumValue | -1*x;
+        long res = checksumValue | -1 * x;
         return String.valueOf(res);
     }
 }

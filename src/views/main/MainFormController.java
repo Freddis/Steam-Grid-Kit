@@ -459,6 +459,9 @@ public class MainFormController {
             case FIND_EXISTING_SHORTCUTS:
                 tasks.add(new ShortcutParser(logger, settings));
                 break;
+            case FIND_EXISTING_IMAGES:
+                tasks.add(new ExistingImagesFinder(logger, settings));
+                break;
             case LOAD_STEAM_GAMES:
                 tasks.add(new SteamGamesLoader(logger, settings));
                 update = false;
@@ -477,6 +480,7 @@ public class MainFormController {
                 break;
             case ALL:
                 tasks.add(new ShortcutParser(logger, settings));
+                tasks.add(new ExistingImagesFinder(logger, settings));
                 tasks.add(new GameFolderFinder(logger, settings));
                 tasks.add(new ExeFinder(logger, settings));
                 tasks.add(new SteamGamesLoader(logger, settings));

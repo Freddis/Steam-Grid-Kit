@@ -25,6 +25,10 @@ public class Config {
         return getJarPath() + "/images";
     }
 
+    public static String getSetImagesDirectory() {
+        return getJarPath() + "/set images";
+    }
+
     public static String getJarPath() {
 
         //As artifact, getResource(".") doesn't work
@@ -46,8 +50,7 @@ public class Config {
         }
     }
 
-    public static String getVersion()
-    {
+    public static String getVersion() {
         return "1.0";
     }
 
@@ -74,6 +77,7 @@ public class Config {
     public enum Task {
         ALL("All"),
         FIND_EXISTING_SHORTCUTS("Find Existing Shortcuts"),
+        FIND_EXISTING_IMAGES("Find Existing images"),
         FIND_GAME_FOLDERS("Find Game Folders"),
         LOAD_STEAM_GAMES("Load Steam Games"),
         FIND_EXECUTABLES("Find Executable"),
