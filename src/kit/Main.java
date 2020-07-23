@@ -22,6 +22,7 @@ public class Main extends Application {
         URL res = getClass().getResource("/views/main/main.fxml");
         Stage stage = FXMLLoader.load(res);
         stage.show();
+        stage.setTitle(stage.getTitle()+" v"+Config.getVersion());
         stage.setOnCloseRequest(event -> {
             Platform.exit();
             System.exit(0);

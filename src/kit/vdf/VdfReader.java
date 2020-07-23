@@ -5,24 +5,41 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
 
 public class VdfReader {
+
+    final char x00 = 0x00; //separator or list
+    final char x01 = 0x01; //string
+    final char x02 = 0x02; //bool
+    final char x08 = 0x08; //ending
 
     public JSONArray parse(File file) {
         String content;
         try {
-            content = new String(Files.readAllBytes(file.toPath()));
+            byte[] bytes = Files.readAllBytes(file.toPath());;
+//            content = new String(bytes, StandardCharsets.UTF_8);
+            char[] chars = new char[bytes.length];
+            //byte is signed??? overflows and needs to be corrected
+            //it's funny though that readAllBytes can read only half of the bytes out there xD
+            //the other problems is that some values are binary and it doesn't go Java reading them into UTF-8, since it just changes the actual bytes
+            for(int i =0; i < bytes.length; i++)
+            {
+                chars[i] = (char)bytes[i];
+                if(bytes[i] < 0)
+                {
+                    chars[i] += 256;
+                }
+            }
+            content = new String(chars);
         } catch (IOException e) {
             return null;
         }
-        String x00 = new String(new char[]{0});
-        String x08 = new String(new char[]{8});
 
         String start = x00 + "shortcuts" + x00 + x00;
-        String end = x08 + x08 + x08 + x08;
-        String lineDelimiter = x08 + x08 + x00;
+        String end = "" + x08 + x08 + x08 + x08;
+        String lineDelimiter = "" + x08 + x08 + x00;
         content = content.replace(start, "").substring(0, content.length() - start.length() - end.length());
         String[] lines = content.split(lineDelimiter);
 
@@ -35,10 +52,6 @@ public class VdfReader {
     }
 
     private JSONObject parseLine(String line) {
-        final char x00 = (char) 0; //separator
-        final char x01 = (char) 1; //string
-        final char x02 = (char) 2; //bool
-
         JSONObject result = new JSONObject();
         IndexRef ref = new IndexRef();
         String id = readUntilByte(line, ref, x00);
@@ -64,17 +77,15 @@ public class VdfReader {
     }
 
     private void readList(JSONObject result, String name, String str, IndexRef ref) {
-        String listString = readUntilByte(str, ref, (char) 8);
+        String listString = readUntilByte(str, ref, x08);
         IndexRef index = new IndexRef();
-        ArrayList<String> list = new ArrayList<>();
-        while (index.i < listString.length()) {
-            readUntilByte(listString, index, (char) 1);
-            String number = readUntilByte(listString, index, (char) 0);
-            String value = readUntilByte(listString, index, (char) 0);
-            list.add(value);
-        }
         JSONArray arr = new JSONArray();
-        arr.put(list);
+        while (index.i < listString.length()) {
+            readUntilByte(listString, index, x01);
+            String number = readUntilByte(listString, index, x00);
+            String value = readUntilByte(listString, index, x00);
+            arr.put(value);
+        }
         result.put(name, arr);
     }
 
@@ -88,13 +99,16 @@ public class VdfReader {
         char b = str.charAt(ref.i++);
         char c = str.charAt(ref.i++);
         char d = str.charAt(ref.i++);
-        if (b == 0 && c == 0 && d == 0) {
+        if (b == x00 && c == x00 && d == x00) {
             boolean res = a == 1;
             result.put(name, res);
             return;
         }
         //if more than 1 byte is used, then it's
-        String date = new String(new char[]{a, b, c, d});
+        String dateStr = new String(new char[]{a, b, c, d});
+        JSONObject date = new JSONObject();
+        date.put("type","date");
+        date.put("value",dateStr);
         result.put(name, date);
     }
 

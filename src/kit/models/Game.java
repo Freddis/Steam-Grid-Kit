@@ -2,11 +2,16 @@ package kit.models;
 
 import kit.Config;
 import kit.interfaces.IJson;
+import kit.vdf.VdfKey;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
 public class Game implements IJson {
 
@@ -93,7 +98,7 @@ public class Game implements IJson {
 
     public String getExecName() {
         String exec = getSelectedExe();
-        if(exec != null)
+        if(exec == null)
         {
             return null;
         }
@@ -167,5 +172,38 @@ public class Game implements IJson {
 
     public void wipe() {
         foundSteamGames.clear();
+    }
+
+    public JSONObject getVdf() {
+        return vdf;
+    }
+
+    public String getIntendedTitle() {
+        if(this.getSelectedSteamGame() != null)
+        {
+            return this.getSelectedSteamGame().getName();
+        }
+        if(this.getAltName() != null && !this.getAltName().isEmpty())
+        {
+            return this.getAltName();
+        }
+        return this.getDirectory();
+    }
+
+    public String getId() {
+        String target = this.getSelectedExe() != null ? this.getSelectedExe() : "";
+        String name = this.getIntendedTitle();
+        String seed = '"' + target + '"' + name;
+
+        Checksum checksum = new CRC32();
+
+        // update the current checksum with the specified array of bytes
+        byte[] bytes = seed.getBytes(StandardCharsets.UTF_8);
+        checksum.update(bytes, 0, bytes.length);
+        // get the current checksum value
+        long checksumValue = checksum.getValue();
+        long x = 0x80000000;
+        long res = checksumValue | -1*x;
+        return String.valueOf(res);
     }
 }

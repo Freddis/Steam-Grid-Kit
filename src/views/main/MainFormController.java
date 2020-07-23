@@ -150,7 +150,7 @@ public class MainFormController {
             return new SimpleObservableValue<>(() -> String.valueOf(number));
         });
 
-        String gamesDir = settings.getString(Config.Keys.GAMES_DIRECTORY_PATH.getKey());
+        String gamesDir = settings.optString(Config.Keys.GAMES_DIRECTORY_PATH.getKey(),null);
         String localPath = settings.optString(Config.Keys.LOCAL_GAMES_DIRECTORY_PATH.getKey(),null);
         String finalGamesDir = localPath != null ? localPath : gamesDir;
         tableColumnGame.setCellValueFactory(param -> new SimpleObservableValue<>(() -> {

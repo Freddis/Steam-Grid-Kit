@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 public class ShortcutParser implements ITask {
 
@@ -61,14 +60,24 @@ public class ShortcutParser implements ITask {
 
         JsonHelper helper = new JsonHelper(logger);
         String[] ignored = helper.toStringArray(settings.optJSONArray(Config.Keys.IGNORED_FOLDERS_NAMES.getKey()));
-        ArrayList<Game> games = new ArrayList<>();
+        ArrayList<Game> games = helper.toList(Game::new, settings.optJSONArray(Config.Keys.GAMES.getKey()));
+
         for (int i = 0; i < data.length(); i++) {
             JSONObject row = data.getJSONObject(i);
             Game game =  this.createGame(row,gamePath);
             Optional<Game> original = Arrays.stream(games.toArray(new Game[0])).filter(g -> g.isTheSame(game)).findFirst();
-            boolean gameIgnored = Arrays.stream(ignored).anyMatch(str -> str == game.getDirectory());
-            if (!original.isPresent() && !gameIgnored) {
+            boolean gameIgnored = Arrays.stream(ignored).anyMatch(str -> str.equals(game.getDirectory()));
+            if(gameIgnored)
+            {
+                logger.log("Game Ignored "+ game.getDirectory());
+                continue;
+            }
+            if (!original.isPresent()) {
                 games.add(game);
+            }
+            else {
+//                game.setAltName(row.getString("appname"));
+                original.get().setVdf(row);
             }
         }
 
@@ -78,13 +87,13 @@ public class ShortcutParser implements ITask {
         finishCallback.accept(true);
     }
 
-    private Game createGame(JSONObject row, String path) {
+    private Game createGame(JSONObject vdf, String path) {
         String separator = "\\\\";
         if(path.charAt(path.length()-1) != '\\')
         {
             path += '\\';
         }
-        String exe = row.getString("exe");
+        String exe = vdf.getString("exe");
         exe = exe.substring(1,exe.length()-1);
 
         String directory = exe;
@@ -97,9 +106,9 @@ public class ShortcutParser implements ITask {
         }
 
         Game game = new Game(directory);
-        game.setAltName(row.getString("appname"));
+        game.setAltName(vdf.getString("appname"));
         game.getExecs().add(exe);
-        game.setVdf(row);
+        game.setVdf(vdf);
 
         return game;
     }

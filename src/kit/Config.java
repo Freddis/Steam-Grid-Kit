@@ -46,6 +46,10 @@ public class Config {
         }
     }
 
+    public static String getVersion()
+    {
+        return "1.0";
+    }
 
     public enum Keys {
         GAMES_DIRECTORY_PATH("gamesDirectory"),
