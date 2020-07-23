@@ -58,7 +58,7 @@ public class CreateVdfFile implements ITask {
 
     private boolean writeContentToShortcutsFile(String content) {
         String filePath = settings.optString(Config.Keys.VDF_FILE.getKey(), null);
-//        String filePath = Config.getJarPath()+"/test.vdf";
+        filePath = Config.getJarPath()+"/test.vdf";
         File existingVdfFile = new File(filePath);
         if (existingVdfFile.exists() && !existingVdfFile.delete()) {
             logger.log("Cannot delete vdf file" + existingVdfFile.getAbsolutePath());

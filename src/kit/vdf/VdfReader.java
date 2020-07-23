@@ -5,6 +5,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
@@ -14,23 +15,30 @@ public class VdfReader {
     final char x01 = 0x01; //string
     final char x02 = 0x02; //bool
     final char x08 = 0x08; //ending
+    char[] originalBytes;
 
     public JSONArray parse(File file) {
         String content;
         try {
-            byte[] bytes = Files.readAllBytes(file.toPath());;
+            byte[] bytes = Files.readAllBytes(file.toPath());
+            ;
 //            content = new String(bytes, StandardCharsets.UTF_8);
             char[] chars = new char[bytes.length];
+            originalBytes = chars;
             //byte is signed??? overflows and needs to be corrected
             //it's funny though that readAllBytes can read only half of the bytes out there xD
-            //the other problems is that some values are binary and it doesn't go Java reading them into UTF-8, since it just changes the actual bytes
-            for(int i =0; i < bytes.length; i++)
-            {
-                chars[i] = (char)bytes[i];
-                if(bytes[i] < 0)
-                {
-                    chars[i] += 256;
-                }
+
+            //Since the string contains binary data for dates, it's impossible to read it as UTF-8, since it will destroy the dates as they will be treated as multibyte characters
+            //We can't read the string as single byte either, since bytes are not signed and get overflow in Java
+            //We can't fix the overflow right here, because it will drive dates unreadable
+            //So the trick is to convert bytes into chars, which will preserve the date and are compatible with ASCII 2 key names for fields
+            //And then convert it to either UTF-8 or UBytes when we find UTF-8 String values or dates.
+            for (int i = 0; i < bytes.length; i++) {
+                chars[i] = (char) bytes[i];
+//                if(bytes[i] < 0)
+//                {
+//                    chars[i] += 256;
+//                }
             }
             content = new String(chars);
         } catch (IOException e) {
@@ -91,7 +99,15 @@ public class VdfReader {
 
     private void readStringValue(JSONObject result, String name, String str, IndexRef ref) {
         String value = readUntilByte(str, ref, (char) 0);
-        result.put(name, value);
+        //In order to keep the bytes untouched, we converted every byte into char and since char is twice as big as byte in Java
+        //it's now impossible to read multibyte UTF-8 values, they just treated as 2 separate chars.
+        //in order to overcome this problem, we need to convert this part of the string back to original signed bytes and read it as UTF-8
+        byte[] bytes = new byte[value.length()];
+        for (int i = 0; i < value.length(); i++) {
+            bytes[i] = (byte) value.charAt(i);
+        }
+        String val = new String(bytes, StandardCharsets.UTF_8);
+        result.put(name, val);
     }
 
     private void readBoolOrDate(JSONObject result, String name, String str, IndexRef ref) {
@@ -104,11 +120,25 @@ public class VdfReader {
             result.put(name, res);
             return;
         }
-        //if more than 1 byte is used, then it's
-        String dateStr = new String(new char[]{a, b, c, d});
+
+        //if more than 1 byte is used, then it's a binary date
+        //and here comes the problem, you can't read binary as normal chars, since they will be converted to some UTF-8 multibyte crappy chars
+        //so, we need to convert this part of a string back to original bytes
+        //but it's not enough, because bytes in Java are signed, so we need to create unsigned chars that will reflect exactly what is written in binary.
+        byte[] crappySignedBytes = new byte[]{(byte) a, (byte) b, (byte) c, (byte) d};
+        char[] unsignedGoodBytes = new char[crappySignedBytes.length];
+        for(int i = 0; i < crappySignedBytes.length; i++ )
+        {
+            unsignedGoodBytes[i] = (char) crappySignedBytes[i];
+            if(crappySignedBytes[i] < 0)
+            {
+                unsignedGoodBytes[i] += 256;
+            }
+        }
+        String dateStr = new String(unsignedGoodBytes);
         JSONObject date = new JSONObject();
-        date.put("type","date");
-        date.put("value",dateStr);
+        date.put("type", "date");
+        date.put("value", dateStr);
         result.put(name, date);
     }
 
