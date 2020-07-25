@@ -1,23 +1,31 @@
 package views.options;
 
-import javafx.fxml.FXML;
+import com.sun.deploy.uitoolkit.impl.fx.HostServicesFactory;
+import com.sun.javafx.application.HostServicesDelegate;
+import com.sun.scenario.Settings;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import kit.Config;
+import kit.griddb.SteamGridDbClient;
 import kit.utils.JsonHelper;
 import kit.utils.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.function.Consumer;
+
 public class OptionsController {
-    @FXML
     public TextArea textAreaIgnoredFolderNames;
-    @FXML
     public TextField textFieldLocalGamesPath;
-    @FXML
     public TextField textFieldLocalVdfPath;
+    public TextField textFieldSteamGridDbApiKey;
+    public Button buttonSave;
+    public Button buttonClear;
 
     private JSONObject settings;
     private JsonHelper jsonHelper;
@@ -25,63 +33,125 @@ public class OptionsController {
     private Runnable onSave;
 
 
-    public void initializeSettings(Logger logger, JSONObject settings,Runnable onSave) {
+    public void initializeSettings(Logger logger, JSONObject settings, Runnable onSave) {
         this.settings = settings;
         this.logger = logger;
         this.jsonHelper = new JsonHelper(logger);
-        loadCommaSeparatedValues(settings,Config.Keys.IGNORED_FOLDERS_NAMES.getKey(),textAreaIgnoredFolderNames);
-        textFieldLocalGamesPath.setText(settings.optString(Config.Keys.LOCAL_GAMES_DIRECTORY_PATH.getKey(),""));
-        textFieldLocalVdfPath.setText(settings.optString(Config.Keys.LOCAL_VDF_PATH.getKey(),""));
+        loadCommaSeparatedValues(settings, Config.Keys.IGNORED_FOLDERS_NAMES.getKey(), textAreaIgnoredFolderNames);
+        textFieldLocalGamesPath.setText(settings.optString(Config.Keys.LOCAL_GAMES_DIRECTORY_PATH.getKey(), ""));
+        textFieldLocalVdfPath.setText(settings.optString(Config.Keys.LOCAL_VDF_PATH.getKey(), ""));
+        textFieldSteamGridDbApiKey.setText(settings.optString(Config.Keys.STEAM_GRID_DB_API_KEY.getKey(),""));
         this.onSave = onSave;
     }
-    public void saveOptions(MouseEvent mouseEvent) {
-        addCommaSeparatedValues(settings,Config.Keys.IGNORED_FOLDERS_NAMES.getKey(),textAreaIgnoredFolderNames);
 
-        if(textFieldLocalGamesPath.getText() != null)
-        {
-            String val = textFieldLocalGamesPath.getText().trim();
-            settings.put(Config.Keys.LOCAL_GAMES_DIRECTORY_PATH.getKey(),val.isEmpty() ? null : val);
+    public void saveOptions(MouseEvent mouseEvent) {
+        String key = textFieldSteamGridDbApiKey.getText();
+        String existingKey = settings.optString(Config.Keys.STEAM_GRID_DB_API_KEY.getKey(),null);
+        boolean shouldCheckKey = key != null && !key.trim().isEmpty() && !(existingKey != null && existingKey.equals(key));
+
+        Consumer<Boolean> callback = status -> {
+            buttonSave.setDisable(false);
+            buttonClear.setDisable(false);
+            if (!status) {
+                Alert.AlertType type = Alert.AlertType.ERROR;
+                Alert alert = new Alert(type);
+                alert.setTitle("API status");
+                alert.setHeaderText("");
+                String message = "Something went wrong, please check the API key";
+                alert.setContentText(message);
+                alert.show();
+                return;
+            }
+            if(key != null)
+            {
+                settings.put(Config.Keys.STEAM_GRID_DB_API_KEY.getKey(), key.trim());
+            }
+
+            addCommaSeparatedValues(settings, Config.Keys.IGNORED_FOLDERS_NAMES.getKey(), textAreaIgnoredFolderNames);
+
+            if (textFieldLocalGamesPath.getText() != null) {
+                String val = textFieldLocalGamesPath.getText().trim();
+                settings.put(Config.Keys.LOCAL_GAMES_DIRECTORY_PATH.getKey(), val.isEmpty() ? null : val);
+            }
+            if (textFieldLocalVdfPath.getText() != null) {
+                String val = textFieldLocalVdfPath.getText().trim();
+                settings.put(Config.Keys.LOCAL_VDF_PATH.getKey(), val.isEmpty() ? null : val);
+            }
+            jsonHelper.writeJsonToFile(Config.getPropsJsonFilePath(), settings);
+            Stage stage = (Stage) textAreaIgnoredFolderNames.getScene().getWindow();
+            stage.close();
+        };
+
+        buttonSave.setDisable(true);
+        buttonClear.setDisable(true);
+
+
+
+        if (shouldCheckKey) {
+            SteamGridDbClient client = new SteamGridDbClient(key.trim(), Config.getUserAgent());
+            client.testApi(status -> {
+                Platform.runLater(() -> {
+                    callback.accept(status);
+                });
+            });
+        } else {
+            callback.accept(true);
         }
-        if(textFieldLocalVdfPath.getText() != null)
-        {
-            String val = textFieldLocalVdfPath.getText().trim();
-            settings.put(Config.Keys.LOCAL_VDF_PATH.getKey(),val.isEmpty() ? null : val);
-        }
-        jsonHelper.writeJsonToFile(Config.getPropsJsonFilePath(),settings);
-        Stage stage = (Stage) textAreaIgnoredFolderNames.getScene().getWindow();
-        stage.close();
     }
 
     private void loadCommaSeparatedValues(JSONObject obj, String key, TextArea textArea) {
-        if(obj.has(key))
-        {
+        if (obj.has(key)) {
             JSONArray arr = obj.getJSONArray(key);
             String[] strings = new String[arr.length()];
-            for(int i =0; i < arr.length(); i++){
+            for (int i = 0; i < arr.length(); i++) {
                 strings[i] = arr.getString(i);
             }
-            textArea.setText(String.join(",",strings));
+            textArea.setText(String.join(",", strings));
         }
     }
+
     private void addCommaSeparatedValues(JSONObject obj, String key, TextArea textArea) {
         JSONArray arr = new JSONArray();
         String[] parts = textArea.getText().split(",");
-        for(String part : parts){
+        for (String part : parts) {
             String trimmed = part.trim();
-            if(trimmed.isEmpty())
-            {
+            if (trimmed.isEmpty()) {
                 continue;
             }
             arr.put(trimmed);
         }
-        obj.put(key,arr);
+        obj.put(key, arr);
     }
 
     public void clearGames(MouseEvent mouseEvent) {
         logger.log("Clearing games");
-        settings.put(Config.Keys.GAMES.getKey(),new JSONArray());
+        settings.put(Config.Keys.GAMES.getKey(), new JSONArray());
         Stage stage = (Stage) textAreaIgnoredFolderNames.getScene().getWindow();
         stage.close();
         onSave.run();
+    }
+
+    public void testSteamGridDbApi(MouseEvent mouseEvent) {
+        String key = textFieldSteamGridDbApiKey.getText();
+        key = key != null ? key.trim() : null;
+
+        SteamGridDbClient client = new SteamGridDbClient(key, Config.getUserAgent());
+        client.testApi(status -> {
+            Platform.runLater(() -> {
+                Alert.AlertType type = status ? Alert.AlertType.INFORMATION : Alert.AlertType.ERROR;
+                Alert alert = new Alert(type);
+                alert.setTitle("API status");
+                alert.setHeaderText("");
+                String message = status ? "Successfully connected to SteamGridDb!" : "Something went wrong, please check the key";
+                alert.setContentText(message);
+                alert.show();
+            });
+        });
+    }
+
+    public void gotoSteamGridDbWebsite(MouseEvent mouseEvent) {
+        String uri = "https://www.steamgriddb.com/profile/preferences";
+        HostServicesDelegate hostServices = HostServicesFactory.getInstance(kit.Main.getCurrent());
+        hostServices.showDocument(uri);
     }
 }

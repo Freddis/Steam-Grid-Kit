@@ -150,8 +150,8 @@ public class MainFormController {
             return new SimpleObservableValue<>(() -> String.valueOf(number));
         });
 
-        String gamesDir = settings.optString(Config.Keys.GAMES_DIRECTORY_PATH.getKey(),null);
-        String localPath = settings.optString(Config.Keys.LOCAL_GAMES_DIRECTORY_PATH.getKey(),null);
+        String gamesDir = settings.optString(Config.Keys.GAMES_DIRECTORY_PATH.getKey(), null);
+        String localPath = settings.optString(Config.Keys.LOCAL_GAMES_DIRECTORY_PATH.getKey(), null);
         String finalGamesDir = localPath != null ? localPath : gamesDir;
         tableColumnGame.setCellValueFactory(param -> new SimpleObservableValue<>(() -> {
             ArrayList<Node> nodes = new ArrayList<>();
@@ -159,7 +159,7 @@ public class MainFormController {
             String start = game.getDirectory() + "\n";
             nodes.add(new Label(game.getDirectory()));
             if (game.getAltName() != null) {
-                nodes.add(new Label("("+game.getAltName()+")"));
+                nodes.add(new Label("(" + game.getAltName() + ")"));
             }
             if (game.getSelectedSteamGame() != null) {
                 nodes.add(new Label(String.valueOf(game.getSelectedSteamGame().getAppId())));
@@ -169,14 +169,12 @@ public class MainFormController {
                 id.setStyle("-fx-text-fill: orange");
                 nodes.add(id);
             }
-            if(game.hasVdf())
-            {
+            if (game.hasVdf()) {
                 Label label = new Label("Exisitng shortcut");
                 label.setStyle("-fx-text-fill: dodgerblue");
                 nodes.add(label);
             }
-            if(!game.isLocatedIn(finalGamesDir))
-            {
+            if (!game.isLocatedIn(finalGamesDir)) {
                 Label label = new Label("Not from the game directory");
                 label.setStyle("-fx-text-fill: orange");
                 nodes.add(label);
@@ -203,10 +201,9 @@ public class MainFormController {
         }));
         tableColumnImageCover.setCellValueFactory(item -> new SimpleObservableValue<>(() -> images.getImageView(item.getValue().getCoverImageFile(), tableColumnImageCover.widthProperty())));
         tableColumnActions.setCellValueFactory(item -> new SimpleObservableValue<>(() -> {
-            String[] names = {"Edit","Update","Wipe","Ignore"};
+            String[] names = {"Edit", "Update", "Wipe", "Ignore"};
             Button[] buttons = new Button[names.length];
-            for(int i =0; i < names.length; i++)
-            {
+            for (int i = 0; i < names.length; i++) {
                 Button button = new Button(names[i]);
                 button.setPrefWidth(100);
                 button.disableProperty().bind(progress.getIsRunningProperty());
@@ -245,8 +242,7 @@ public class MainFormController {
         alert.setHeaderText("");
         alert.setContentText("Are you sure you want to delete this game from the list and add its folder to ignored list?");
         Optional<ButtonType> result = alert.showAndWait();
-        if(result.isPresent() && result.get() == ButtonType.OK)
-        {
+        if (result.isPresent() && result.get() == ButtonType.OK) {
             logger.log("Deleting game: " + game.getDirectory());
             games.remove(game);
             JSONArray ignoredGames = settings.getJSONArray(Config.Keys.IGNORED_FOLDERS_NAMES.getKey());
@@ -264,21 +260,30 @@ public class MainFormController {
         alert.setHeaderText("");
         alert.setContentText("Are you sure you want to clear images and steam ids for the game?");
         Optional<ButtonType> result = alert.showAndWait();
-        if(result.isPresent() && result.get() == ButtonType.OK)
-        {
+        if (result.isPresent() && result.get() == ButtonType.OK) {
             logger.log("Wiping game: " + game.getDirectory());
+
+            ArrayList<File> imageFiles = new ArrayList<>();
+            imageFiles.add(game.getHeaderImageFile());
+            imageFiles.add(game.getCoverImageFile());
+            imageFiles.add(game.getBackgroundImageFile());
+            imageFiles.add(game.getLogoImageFile());
             game.wipe();
             File imageFolder = new File(Config.getImageDirectory());
             File gameImageFolder = new File(imageFolder, game.getDirectory());
             boolean deleteResult = true;
             try {
-                File[] files = gameImageFolder.listFiles();
-                if (files != null) {
-                    deleteResult &= Arrays.stream(files).map(File::delete).collect(Collectors.toSet()).stream().allMatch(res -> res == true);
+                if (gameImageFolder.exists() && gameImageFolder.canRead()) {
+                    imageFiles.addAll(Arrays.asList(gameImageFolder.listFiles()));
+                }
+                for (File file : imageFiles) {
+                    if (file != null) {
+                        logger.log("Deleting " + file.getAbsolutePath());
+                        deleteResult &= file.delete();
+                    }
                 }
                 deleteResult &= gameImageFolder.delete();
-            }catch (Exception e)
-            {
+            } catch (Exception e) {
                 deleteResult = false;
                 logger.log("Something went wrong: " + e.getMessage());
             }
@@ -307,9 +312,7 @@ public class MainFormController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/options/options.fxml"));
             stage = loader.load();
             OptionsController ctrl = loader.getController();
-            ctrl.initializeSettings(logger, settings,() -> {
-                initGames();
-            });
+            ctrl.initializeSettings(logger, settings, this::initGames);
         } catch (Exception e) {
             logger.log("Couldn't create new window");
             return;
@@ -328,6 +331,7 @@ public class MainFormController {
             GameController ctrl = loader.getController();
             ctrl.initialize(logger, settings, game, () -> {
                 saveConfigJson();
+                initGames();
                 initTable();
             });
         } catch (Exception e) {
@@ -436,7 +440,7 @@ public class MainFormController {
 
     private void saveConfigJson() {
         logger.log("Saving JSON props");
-        JSONArray arr =  jsonHelper.toJsonArray(games.toArray(new Game[0]));
+        JSONArray arr = jsonHelper.toJsonArray(games.toArray(new Game[0]));
         settings.put(Config.Keys.GAMES.getKey(), arr);
         settings.put(Config.Keys.VDF_FILE.getKey(), textFieldShortcutsFile.getText());
         settings.put(Config.Keys.GAMES_DIRECTORY_PATH.getKey(), textFieldGamesDirectory.getText());
@@ -496,7 +500,7 @@ public class MainFormController {
     }
 
     public void transfer(MouseEvent mouseEvent) {
-        ITask[] tasks = { new CreateVdfFile(logger, settings)};
+        ITask[] tasks = {new CreateVdfFile(logger, settings)};
         runTasks(tasks, true);
     }
 }

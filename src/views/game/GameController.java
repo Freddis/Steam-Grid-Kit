@@ -3,51 +3,59 @@ package views.game;
 import com.sun.deploy.uitoolkit.impl.fx.HostServicesFactory;
 import com.sun.javafx.application.HostServicesDelegate;
 import com.sun.javafx.collections.ObservableListWrapper;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.TextField;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import kit.Config;
+import kit.griddb.SteamGridDbClient;
 import kit.models.Game;
 import kit.models.SteamGame;
 import kit.utils.JsonHelper;
 import kit.utils.Logger;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class GameController {
-
     public ChoiceBox<String> choiceBoxExec;
     public ChoiceBox<String> choiceBoxGame;
     public TextField textFieldDirectoryName;
     public TextField textFieldAltName;
     public Hyperlink hyperlinkShowGame;
+    public TabPane tabPaneIcons;
     private Game game;
     private Logger logger;
     private JSONObject settings;
     private Runnable onSave;
+    private SteamGridDbClient client = null;
+    private final BooleanProperty useSteamId = new SimpleBooleanProperty(true);
+    private final ObservableList<kit.griddb.Game> games = FXCollections.observableArrayList();
+
 
     public void save(MouseEvent mouseEvent) {
 
         JsonHelper helper = new JsonHelper(logger);
         ArrayList<Game> games = helper.toList(Game::new, settings.getJSONArray(Config.Keys.GAMES.getKey()));
 
-        if(game.getExecs().size() > 0)
-        {
+        if (game.getExecs().size() > 0) {
             String newExe = game.getExecs().get(choiceBoxExec.getSelectionModel().getSelectedIndex());
             game.setSelectedExe(newExe);
         }
 
-        if(game.getFoundSteamGames().size() > 0)
-        {
+        if (game.getFoundSteamGames().size() > 0) {
             SteamGame newGame = game.getFoundSteamGames().get(choiceBoxGame.getSelectionModel().getSelectedIndex());
             game.setSelectedSteamGame(newGame);
         }
 
-        if(textFieldAltName.getText() != null)
-        {
+        if (textFieldAltName.getText() != null) {
             String val = textFieldAltName.getText().trim();
             game.setAltName(val.isEmpty() ? null : val);
         }
@@ -84,6 +92,31 @@ public class GameController {
         } else {
             hyperlinkShowGame.setDisable(true);
         }
+
+
+        String apiKey = settings.optString(Config.Keys.STEAM_GRID_DB_API_KEY.getKey(),null);
+        if(apiKey != null)
+        {
+            client = new SteamGridDbClient(apiKey, Config.getUserAgent());
+        }
+
+        tabPaneIcons.getTabs().clear();
+        String[] images = {"Big Picture Cover", "Cover", "Hero Image", "Logo"};
+        for (int i = 0; i < images.length; i++) {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/game/icon.fxml"));
+            Node tabContent;
+            try {
+                tabContent = loader.load();
+                IconController ctrl = loader.getController();
+                Tab tab = new Tab();
+                tab.setContent(tabContent);
+                ctrl.initialize(game,client, tab, images[i], i, useSteamId, games, this::findGames);
+                tabPaneIcons.getTabs().add(tab);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
     private void openSteamPage() {
@@ -92,5 +125,34 @@ public class GameController {
         String uri = steamGame.getSteamPageUrl();
         HostServicesDelegate hostServices = HostServicesFactory.getInstance(kit.Main.getCurrent());
         hostServices.showDocument(uri);
+    }
+
+    public void findGames(Runnable runnable) {
+        games.clear();
+        String name = null;
+        SteamGame steamgame = game.getSelectedSteamGame();
+        String alt = textFieldAltName.getText();
+        if (!this.useSteamId.getValue()) {
+            if (alt == null || alt.trim().isEmpty() || alt.trim().length() <= 3) {
+                runnable.run();
+                return;
+            }
+            String search = alt.trim();
+            client.findGames(search, foundGames -> {
+                games.clear();
+                games.addAll(foundGames);
+                runnable.run();
+            });
+            return;
+        }
+
+        client.findGameBySteamId(game.getSelectedSteamGame().getAppId(), foundGame -> {
+            games.clear();
+            if (foundGame != null) {
+                games.add(foundGame);
+            }
+            runnable.run();
+        });
+
     }
 }

@@ -8,7 +8,7 @@
 
 <Stage minHeight="600.0" minWidth="1400.0" title="Steam Grid Kit" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="views.main.MainFormController">
     <scene>
-        <Scene stylesheets="@/css/style.css">
+        <Scene stylesheets="@/views/css/style.css">
             <VBox fx:id="container" minHeight="600.0" minWidth="1200.0">
                 <SplitPane dividerPositions="0.2838063439065108" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
                     <SplitPane dividerPositions="0.3411371237458194" maxWidth="600.0" minWidth="336.0" orientation="VERTICAL" prefHeight="598.0" prefWidth="352.0">

@@ -2,12 +2,10 @@ package kit.models;
 
 import kit.Config;
 import kit.interfaces.IJson;
-import kit.vdf.VdfKey;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.zip.CRC32;
@@ -80,34 +78,34 @@ public class Game implements IJson {
     }
 
     public File getHeaderImageFile() {
-        String path1 = Config.getSetImagesDirectory() + "/" + this.getId() + "header.jpg";
-        String path2 = Config.getSetImagesDirectory() + "/" + this.getId() + "header.png";
+        String path1 = getCustomHeaderImagePath();
+        String path2 = getCustomHeaderImagePath().replace(".jpg", ".png");
         String path3 = Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/header.jpg";
-        String[] paths = {path1,path2,path3};
+        String[] paths = {path1, path2, path3};
         return this.returnFileIfExists(paths);
     }
 
     public File getCoverImageFile() {
-        String path1 = Config.getSetImagesDirectory() + "/" + this.getId() + "p.jpg";
-        String path2 = Config.getSetImagesDirectory() + "/" + this.getId() + "p.png";
+        String path1 = getCustomCoverImagePath();
+        String path2 = getCustomCoverImagePath().replace(".jpg", ".png");
         String path3 = Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/library_600x900.jpg";
-        String[] paths = {path1,path2,path3};
+        String[] paths = {path1, path2, path3};
         return this.returnFileIfExists(paths);
     }
 
     public File getBackgroundImageFile() {
-        String path1 = Config.getSetImagesDirectory() + "/" + this.getId() + "_hero.jpg";
-        String path2 = Config.getSetImagesDirectory() + "/" + this.getId() + "_hero.png";
+        String path1 = getCustomBackgroundImagePath();
+        String path2 = getCustomBackgroundImagePath().replace(".jpg", ".png");
         String path3 = Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/library_hero.jpg";
-        String[] paths = {path1,path2,path3};
+        String[] paths = {path1, path2, path3};
         return this.returnFileIfExists(paths);
     }
 
     public File getLogoImageFile() {
-        String path1 = Config.getSetImagesDirectory() + "/" + this.getId() + "_logo.png";
-        String path2 = Config.getSetImagesDirectory() + "/" + this.getId() + "_logo.jpg";
+        String path1 = getCustomLogoImagePath();
+        String path2 = getCustomLogoImagePath().replace(".png", ".jpg");
         String path3 = Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/logo.png";
-        String[] paths = {path1,path2,path3};
+        String[] paths = {path1, path2, path3};
         return this.returnFileIfExists(paths);
     }
 
@@ -225,5 +223,21 @@ public class Game implements IJson {
         long x = 0x80000000;
         long res = checksumValue | -1 * x;
         return String.valueOf(res);
+    }
+
+    public String getCustomHeaderImagePath() {
+        return Config.getSetImagesDirectory() + "/" + this.getId() + "header.jpg";
+    }
+
+    public String getCustomCoverImagePath() {
+        return Config.getSetImagesDirectory() + "/" + this.getId() + "p.jpg";
+    }
+
+    public String getCustomBackgroundImagePath() {
+        return Config.getSetImagesDirectory() + "/" + this.getId() + "_hero.jpg";
+    }
+
+    public String getCustomLogoImagePath() {
+        return Config.getSetImagesDirectory() + "/" + this.getId() + "_logo.png";
     }
 }

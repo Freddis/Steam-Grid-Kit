@@ -5,6 +5,8 @@ import java.io.IOException;
 
 public class Config {
 
+    boolean isRemote = true;
+
     public static String getPropsJsonFilePath() {
         return getJarPath() + "/SteamGridKit.json";
     }
@@ -54,6 +56,10 @@ public class Config {
         return "1.0";
     }
 
+    public static String getUserAgent() {
+        return "Steam Grid Kit " + Config.getVersion();
+    }
+
     public enum Keys {
         GAMES_DIRECTORY_PATH("gamesDirectory"),
         GAMES("games"),
@@ -61,7 +67,8 @@ public class Config {
         IGNORED_FOLDERS_NAMES("ignoredDirectoryNames"),
         VDF_FILE("vdfFile"),
         LOCAL_GAMES_DIRECTORY_PATH("localGamesDirectory"),
-        LOCAL_VDF_PATH("localVdfFile");
+        LOCAL_VDF_PATH("localVdfFile"),
+        STEAM_GRID_DB_API_KEY("steamGridDbApiKey");
 
         private final String key;
 

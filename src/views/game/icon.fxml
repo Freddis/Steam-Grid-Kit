@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="266.0" prefWidth="921.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="views.game.IconController">
+    <AnchorPane fx:id="nodeCurrentImageParent" layoutX="548.0" layoutY="60.0" maxHeight="150.0" maxWidth="220.0" prefHeight="150.0" prefWidth="220.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0">
+        <opaqueInsets>
+            <Insets />
+        </opaqueInsets>
+        <StackPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <ImageView fx:id="imageViewCurrentImage" fitHeight="170.0" fitWidth="220.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@/views/game/no-image.png" />
+                </ImageView>
+            </children>
+        </StackPane>
+    </AnchorPane>
+    <AnchorPane fx:id="nodePreviewImageParent" layoutX="548.0" layoutY="60.0" maxHeight="150.0" maxWidth="220.0" prefHeight="150.0" prefWidth="220.0" AnchorPane.rightAnchor="230.0" AnchorPane.topAnchor="50.0">
+        <opaqueInsets>
+            <Insets />
+        </opaqueInsets>
+        <StackPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <ImageView fx:id="imageViewPreviewImage" fitHeight="150.0" fitWidth="220.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@/views/game/no-image.png" />
+                </ImageView>
+            </children>
+        </StackPane>
+    </AnchorPane>
+
+    <ListView fx:id="listViewGames" layoutX="17.0" layoutY="78.0" prefHeight="200.0" prefWidth="197.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="50.0" />
+    <ListView fx:id="listViewImages" layoutX="239.0" layoutY="60.0" prefHeight="200.0" prefWidth="197.0" AnchorPane.leftAnchor="210.0" AnchorPane.topAnchor="50.0" />
+    <HBox layoutX="461.0" layoutY="10.0" spacing="20.0" AnchorPane.leftAnchor="461.0" AnchorPane.topAnchor="10.0" />
+    <CheckBox fx:id="checkBoxUseSteamId" layoutX="217.0" layoutY="17.0" mnemonicParsing="false" text="Search by Steam ID (Otherwise Alt Name is used)" AnchorPane.leftAnchor="200.0" AnchorPane.topAnchor="8.0" />
+    <Button fx:id="buttonFindGames" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onMouseClicked="#findGames" text="Find Images on SteamGridDb" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
+    <Button layoutX="745.0" layoutY="12.0" mnemonicParsing="false" onMouseClicked="#uploadFromDrive" text="Upload From Disk" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+    <Button onMouseClicked="#setIcon" layoutX="603.0" layoutY="219.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="90.0" text=" Set Icon" AnchorPane.rightAnchor="180.0" />
+    <Label fx:id="labelNoApiKey" style="-fx-text-fill: red;" text="Please set SteamGridDb API key in the options to enable image search" visible="false" AnchorPane.leftAnchor="200.0" AnchorPane.topAnchor="10.0" />
+    <padding>
+        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+    </padding>
+</AnchorPane>

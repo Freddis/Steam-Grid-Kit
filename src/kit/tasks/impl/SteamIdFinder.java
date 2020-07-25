@@ -28,6 +28,12 @@ public class SteamIdFinder extends GameTask {
     @Override
     public void start(Consumer<Double> tickCallback) {
         JSONObject json = helper.readJsonFromFile(Config.getSteamLibraryJsonFilePath());
+        if(json.isEmpty())
+        {
+            logger.log("No stream shop library, exiting");
+            finishCallback.accept(false);
+            return;
+        }
         JSONArray list = json.optJSONObject("applist").optJSONArray("apps");
         steamLibrary = new ArrayList<>(list.length());
         for(int i =0; i < list.length(); i++) {
