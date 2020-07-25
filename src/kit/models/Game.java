@@ -226,18 +226,18 @@ public class Game implements IJson {
     }
 
     public String getCustomHeaderImagePath() {
-        return Config.getSetImagesDirectory() + "/" + this.getId() + "header.jpg";
+        return Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/setheader.jpg";
     }
 
     public String getCustomCoverImagePath() {
-        return Config.getSetImagesDirectory() + "/" + this.getId() + "p.jpg";
+        return Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/setcover.jpg";
     }
 
     public String getCustomBackgroundImagePath() {
-        return Config.getSetImagesDirectory() + "/" + this.getId() + "_hero.jpg";
+        return Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/setbackground.jpg";
     }
 
     public String getCustomLogoImagePath() {
-        return Config.getSetImagesDirectory() + "/" + this.getId() + "_logo.png";
+        return Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/setlogo.png";
     }
 }

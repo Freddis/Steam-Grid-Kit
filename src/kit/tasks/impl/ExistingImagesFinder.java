@@ -14,7 +14,6 @@ import java.util.function.Consumer;
 
 public class ExistingImagesFinder extends GameTask {
 
-    private File imageDir;
     private File[] imageFiles;
 
     public ExistingImagesFinder(Logger logger, JSONObject settings) {
@@ -23,19 +22,18 @@ public class ExistingImagesFinder extends GameTask {
 
     @Override
     public void start(Consumer<Double> tickCallback) {
-        File file = new File(Config.getSetImagesDirectory());
+        File file = new File(Config.getImageDirectory());
         if(!file.exists() && !file.mkdir())
         {
             logger.log("Cannot create image dir "+file.getAbsolutePath());
             finishCallback.accept(false);
             return;
         }
-        this.imageDir = file;
 
         String filePath = settings.optString(Config.Keys.VDF_FILE.getKey(), null);
         File existingVdfFile = new File(filePath);
         File imageDir = new File(existingVdfFile.getParent(),"grid");
-        if(!imageDir.exists() && imageDir.isDirectory() && imageDir.canRead())
+        if(!imageDir.exists() || !imageDir.isDirectory() && !imageDir.canRead())
         {
             logger.log("Cannot find or read directory: " + imageDir.getAbsolutePath());
             finishCallback.accept(false);
@@ -54,6 +52,14 @@ public class ExistingImagesFinder extends GameTask {
             logger.log("Game is not already added to steam, skipping since there's no possible images yet: " + game.getIntendedTitle());
             return true;
         }
+
+        File imageDir = new File(Config.getImageDirectory(),game.getImageDirectoryName());
+        if(!imageDir.exists() && !imageDir.mkdir())
+        {
+            logger.log("Cannot create image dir "+imageDir.getAbsolutePath());
+            return false;
+        }
+
         String id = game.getId();
         String path = game.getVdf().optString(VdfKey.ICON.getKey(), "");
         if(!path.isEmpty())
@@ -63,7 +69,7 @@ public class ExistingImagesFinder extends GameTask {
             if(icon.exists() && icon.canRead())
             {
                 String extension = icon.getName().contains(".jpg") ? ".jpg" : ".png";
-                File newFile = new File(imageDir, id +"header." + extension );
+                File newFile = new File(imageDir, "setheader." + extension );
                 if(newFile.exists())
                 {
                     logger.log("File exists, skipping: "+newFile.getAbsolutePath());
@@ -81,8 +87,9 @@ public class ExistingImagesFinder extends GameTask {
             }
         }
 
-
         String[] imageTypes = {"p","_hero","_logo","header"};
+        String[] imageToTypes = {"setcover","setbackground","setlogo","setheader"};
+        int i = 0;
         for(String type : imageTypes) {
             String filename = id + type;
             for (File file : imageFiles) {
@@ -90,7 +97,10 @@ public class ExistingImagesFinder extends GameTask {
                 {
                     continue;
                 }
-                File newFile = new File(imageDir, file.getName());
+
+                String ext = file.getAbsolutePath().contains(".png") ? ".png" : ".jpg";
+                String newName = imageToTypes[i] + ext;
+                File newFile = new File(imageDir, newName);
                 if(newFile.exists())
                 {
                     logger.log("File exists, skipping: "+newFile.getAbsolutePath());
@@ -103,6 +113,7 @@ public class ExistingImagesFinder extends GameTask {
                 }
                 break;
             }
+            i++;
         }
 
         return true;

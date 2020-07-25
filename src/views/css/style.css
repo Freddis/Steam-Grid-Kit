@@ -1,6 +1,30 @@
-.ready-for-export .table-cell {
+.root {
+    -fx-font-size: 14px;
+}
+.mark-problem {
+    -fx-text-fill: orange;
+}
+
+.mark-error {
+    -fx-text-fill: red;
+}
+
+.mark-notice {
+    -fx-text-fill: dodgerblue;
+}
+
+.mark-good {
     -fx-text-fill: green;
 }
- .root {
-    -fx-font-size: 14px;
+
+#textFlowData {
+    -fx-padding: 10;
+    -fx-background-color: white;
+}
+#textFlowData > * {
+    -fx-font-size: 20px;
+}
+#buttonTransfer {
+    -fx-font-weight: bold;
+    -fx-text-fill: darkred;
 }

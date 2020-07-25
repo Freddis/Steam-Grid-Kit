@@ -250,7 +250,7 @@ public class IconController {
         String path = this.getGameImagePath(game, this.type);
         File outFile = new File(path);
 
-        File file = new File(Config.getSetImagesDirectory());
+        File file = new File(Config.getImageDirectory());
         if(!file.exists() && !file.mkdir())
         {
             this.showError("Cannot create image dir");

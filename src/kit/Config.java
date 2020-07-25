@@ -27,10 +27,6 @@ public class Config {
         return getJarPath() + "/images";
     }
 
-    public static String getSetImagesDirectory() {
-        return getJarPath() + "/set images";
-    }
-
     public static String getJarPath() {
 
         //As artifact, getResource(".") doesn't work

@@ -58,7 +58,7 @@ public class CreateVdfFile implements ITask {
 
     private boolean writeContentToShortcutsFile(String content) {
         String filePath = settings.optString(Config.Keys.VDF_FILE.getKey(), null);
-        filePath = Config.getJarPath()+"/test.vdf";
+//        filePath = Config.getJarPath()+"/test.vdf";
         File existingVdfFile = new File(filePath);
         if (existingVdfFile.exists() && !existingVdfFile.delete()) {
             logger.log("Cannot delete vdf file" + existingVdfFile.getAbsolutePath());
@@ -92,6 +92,8 @@ public class CreateVdfFile implements ITask {
         VdfWriter writer = new VdfWriter();
         String imageDir = this.getSteamImageDirPath(existingVdfFile);
         for (Game game : games) {
+            File headerFile = game.getHeaderImageFile();
+            String ext = headerFile != null && headerFile.getAbsolutePath().contains(".png") ? ".png" : ".jpg";
             String imagePath = imageDir + "\\" + game.getId() + "header.jpg";
             writer.addLine(game.getIntendedTitle(), game.getSelectedExe(), imagePath, game.getVdf());
         }

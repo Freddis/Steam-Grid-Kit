@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.stage.*?>
+
+<Stage maxHeight="650.0" maxWidth="950.0" minHeight="650.0" minWidth="950.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="views.game.GameDataController">
+    <scene>
+        <Scene stylesheets="@/views/css/style.css">
+            <AnchorPane prefHeight="650.0" prefWidth="950.0" styleClass="game-data">
+                <padding>
+                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                </padding>
+
+                <Button mnemonicParsing="false" onMouseClicked="#close" text="Close" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+            <TextFlow fx:id="textFlowData" layoutX="179.0" layoutY="139.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            </AnchorPane>
+        </Scene>
+    </scene>
+</Stage>

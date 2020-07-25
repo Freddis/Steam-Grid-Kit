@@ -16,7 +16,7 @@
                             <padding>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                             </padding>
-                     <Button onMouseClicked="#transfer" mnemonicParsing="false" prefWidth="80.0" text="Transfer" AnchorPane.bottomAnchor="60.0" AnchorPane.rightAnchor="0.0" />
+                     <Button fx:id="buttonTransfer" mnemonicParsing="false" onMouseClicked="#transfer" prefWidth="150.0" text="Transfer to Steam" AnchorPane.bottomAnchor="60.0" AnchorPane.rightAnchor="0.0" />
                             <CheckBox fx:id="checkboxUseCache" mnemonicParsing="false" onMouseClicked="#toggleUseCache" selected="true" text="Use Cached Data" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="130.0" />
                             <TextField fx:id="textFieldShortcutsFile" disable="true" editable="false" prefHeight="27.0" prefWidth="332.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="20.0" />
                             <Button fx:id="buttonSelectShortcutsFile" mnemonicParsing="false" onMouseClicked="#selectShortcutFile" prefHeight="27.0" prefWidth="80.0" text="Browse" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="20.0" />

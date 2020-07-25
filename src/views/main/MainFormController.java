@@ -28,7 +28,6 @@ import views.options.OptionsController;
 
 import java.io.File;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 public class MainFormController {
@@ -157,7 +156,9 @@ public class MainFormController {
             ArrayList<Node> nodes = new ArrayList<>();
             Game game = param.getValue();
             String start = game.getDirectory() + "\n";
-            nodes.add(new Label(game.getDirectory()));
+            Node directory  = new Label(game.getDirectory());
+            nodes.add(directory);
+
             if (game.getAltName() != null) {
                 nodes.add(new Label("(" + game.getAltName() + ")"));
             }
@@ -166,17 +167,17 @@ public class MainFormController {
                 nodes.add(new Label(game.getSelectedSteamGame().getName()));
             } else {
                 Label id = new Label("(No Steam App ID)");
-                id.setStyle("-fx-text-fill: orange");
+                id.getStyleClass().add("mark-problem");
                 nodes.add(id);
             }
             if (game.hasVdf()) {
                 Label label = new Label("Exisitng shortcut");
-                label.setStyle("-fx-text-fill: dodgerblue");
+                label.getStyleClass().add("mark-notice");
                 nodes.add(label);
             }
             if (!game.isLocatedIn(finalGamesDir)) {
                 Label label = new Label("Not from the game directory");
-                label.setStyle("-fx-text-fill: orange");
+                label.getStyleClass().add("mark-problem");
                 nodes.add(label);
             }
             nodes.add(new Label(game.getExecName()));
@@ -262,15 +263,10 @@ public class MainFormController {
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             logger.log("Wiping game: " + game.getDirectory());
-
             ArrayList<File> imageFiles = new ArrayList<>();
-            imageFiles.add(game.getHeaderImageFile());
-            imageFiles.add(game.getCoverImageFile());
-            imageFiles.add(game.getBackgroundImageFile());
-            imageFiles.add(game.getLogoImageFile());
             game.wipe();
             File imageFolder = new File(Config.getImageDirectory());
-            File gameImageFolder = new File(imageFolder, game.getDirectory());
+            File gameImageFolder = new File(imageFolder, game.getImageDirectoryName());
             boolean deleteResult = true;
             try {
                 if (gameImageFolder.exists() && gameImageFolder.canRead()) {
@@ -500,7 +496,10 @@ public class MainFormController {
     }
 
     public void transfer(MouseEvent mouseEvent) {
-        ITask[] tasks = {new CreateVdfFile(logger, settings)};
+        ITask[] tasks = {
+                new CreateVdfFile(logger, settings),
+                new TransferImages(logger, settings),
+        };
         runTasks(tasks, true);
     }
 }

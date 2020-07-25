@@ -17,6 +17,11 @@ import kit.utils.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.function.Consumer;
 
 public class OptionsController {
@@ -126,6 +131,19 @@ public class OptionsController {
     public void clearGames(MouseEvent mouseEvent) {
         logger.log("Clearing games");
         settings.put(Config.Keys.GAMES.getKey(), new JSONArray());
+        try {
+            File dir = new File(Config.getImageDirectory());
+            if(dir.exists()) {
+                Files.walk(dir.toPath())
+                        .map(Path::toFile)
+                        .sorted((o1, o2) -> -o1.compareTo(o2))
+                        .forEach(File::delete);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.log("Couldn't clear images");
+        }
+
         Stage stage = (Stage) textAreaIgnoredFolderNames.getScene().getWindow();
         stage.close();
         onSave.run();

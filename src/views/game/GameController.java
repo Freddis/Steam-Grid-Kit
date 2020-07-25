@@ -6,12 +6,12 @@ import com.sun.javafx.collections.ObservableListWrapper;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import kit.Config;
 import kit.griddb.SteamGridDbClient;
@@ -31,6 +31,7 @@ public class GameController {
     public TextField textFieldAltName;
     public Hyperlink hyperlinkShowGame;
     public TabPane tabPaneIcons;
+    public Button buttonShowExistingData;
     private Game game;
     private Logger logger;
     private JSONObject settings;
@@ -74,6 +75,7 @@ public class GameController {
         this.settings = settings;
         this.onSave = onSave;
 
+        buttonShowExistingData.setDisable(!game.hasVdf());
         textFieldDirectoryName.setText(game.getDirectory());
         textFieldAltName.setText(game.getAltName());
         choiceBoxExec.setItems(new ObservableListWrapper<>(game.getExecs()));
@@ -84,20 +86,17 @@ public class GameController {
         steamGames.forEach(el -> steamGamesNames.add(el.getAppId() + ": " + el.getName()));
         choiceBoxGame.setItems(new ObservableListWrapper<>(steamGamesNames));
         choiceBoxGame.getSelectionModel().select(game.getSelectedSteamGameIndex());
-        choiceBoxGame.getSelectionModel().selectedIndexProperty().addListener((a) -> {
-            hyperlinkShowGame.setVisited(false);
-        });
+        choiceBoxGame.getSelectionModel().selectedIndexProperty().addListener((a) -> hyperlinkShowGame.setVisited(false));
         if (choiceBoxGame.getItems().size() > 0) {
             hyperlinkShowGame.setOnMouseClicked((e) -> this.openSteamPage());
         } else {
             hyperlinkShowGame.setDisable(true);
         }
 
-
         String apiKey = settings.optString(Config.Keys.STEAM_GRID_DB_API_KEY.getKey(),null);
-        if(apiKey != null)
+        if(apiKey != null && !apiKey.trim().isEmpty())
         {
-            client = new SteamGridDbClient(apiKey, Config.getUserAgent());
+            client = new SteamGridDbClient(apiKey.trim(), Config.getUserAgent());
         }
 
         tabPaneIcons.getTabs().clear();
@@ -154,5 +153,23 @@ public class GameController {
             runnable.run();
         });
 
+    }
+
+    public void showExistingSteamData(MouseEvent mouseEvent) {
+        logger.log("Showing game info");
+        Stage stage;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/game/data.fxml"));
+            stage = loader.load();
+            GameDataController ctrl = loader.getController();
+            ctrl.initialize(game);
+        } catch (Exception e) {
+            logger.log("Couldn't create new window");
+            return;
+        }
+        stage.setTitle("Edit" + game.getDirectory());
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.initOwner(buttonShowExistingData.getScene().getWindow());
+        stage.show();
     }
 }

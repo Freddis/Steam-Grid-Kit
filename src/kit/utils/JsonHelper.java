@@ -14,8 +14,7 @@ public class JsonHelper {
 
     private final Logger logger;
 
-    public JsonHelper(Logger logger)
-    {
+    public JsonHelper(Logger logger) {
         this.logger = logger;
     }
 
@@ -38,7 +37,7 @@ public class JsonHelper {
     @SuppressWarnings("UnusedReturnValue")
     public boolean writeJsonToFile(String path, JSONObject obj) {
         this.logger.log("Writing data to file " + path);
-        String output = obj.toString();
+        String output = obj.toString(2);
         try {
             PrintWriter writer = new PrintWriter(path, "UTF-8");
             writer.write(output);
@@ -51,29 +50,24 @@ public class JsonHelper {
         return false;
     }
 
-    public String[] toStringArray(JSONArray arr)
-    {
-        if(arr == null)
-        {
+    public String[] toStringArray(JSONArray arr) {
+        if (arr == null) {
             return new String[]{};
         }
         String[] result = new String[arr.length()];
-        for(int i =0; i < arr.length(); i++)
-        {
+        for (int i = 0; i < arr.length(); i++) {
             result[i] = arr.getString(i);
         }
         return result;
     }
 
 
-    public <T extends IJson> ArrayList<T> toList(Callback<JSONObject,T> factory, JSONArray array) {
+    public <T extends IJson> ArrayList<T> toList(Callback<JSONObject, T> factory, JSONArray array) {
         ArrayList<T> result = new ArrayList<>();
-        if(array == null)
-        {
+        if (array == null) {
             return result;
         }
-        for(int i = 0; i < array.length(); i++)
-        {
+        for (int i = 0; i < array.length(); i++) {
             JSONObject obj = array.optJSONObject(i);
             T instance = factory.call(obj);
             result.add(instance);
@@ -83,8 +77,7 @@ public class JsonHelper {
 
     public JSONArray toJsonArray(IJson[] list) {
         JSONArray result = new JSONArray();
-        for(IJson obj : list)
-        {
+        for (IJson obj : list) {
             result.put(obj.toJson());
         }
         return result;
