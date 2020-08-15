@@ -67,7 +67,9 @@ public class GameFolderFinder implements ITask {
             }
             Game game = new Game(file.getName());
             //If we already have the information about the game, it's better we just swap the game with the cached data
-            Optional<Game> same = Arrays.stream(list.toArray(new Game[0])).filter(g -> g.isTheSame(game)).findFirst();
+            Optional<Game> same = Arrays.stream(list.toArray(new Game[0])).filter(g -> g.isTheSame(game,settings)).findFirst();
+            //This one is also can be used, since it can more easily check the folders.
+//            Optional<Game> same = Arrays.stream(list.toArray(new Game[0])).filter(g -> g.getDirectory().contains(game.getDirectory())).findFirst();
             if(!same.isPresent())
             {
                 count++;

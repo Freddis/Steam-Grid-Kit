@@ -7,7 +7,10 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
@@ -17,6 +20,7 @@ import kit.griddb.GridImage;
 import kit.griddb.SteamGridDbClient;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.MalformedURLException;
@@ -259,6 +263,12 @@ public class IconController {
 
         BufferedImage bImage = SwingFXUtils.fromFXImage(image, null);
         String format = outFile.getAbsolutePath().toLowerCase().contains(".png") ? "png" : "jpg";
+        if(format == "jpg") {
+            BufferedImage originalBImage = bImage;
+            bImage = new BufferedImage(originalBImage.getWidth(), originalBImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+            bImage.createGraphics().drawImage(originalBImage, 0, 0, null);
+        }
+
         try {
             ImageIO.write(bImage, format, outFile);
             this.showCurrentImage();

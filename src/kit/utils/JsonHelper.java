@@ -26,7 +26,7 @@ public class JsonHelper {
         try {
             content = new String(Files.readAllBytes(Paths.get(json.toURI())));
             root = new JSONObject(content);
-        } catch (IOException e) {
+        } catch (Exception e) {
             this.logger.log("Can't parse json from: " + path);
             e.printStackTrace();
             return new JSONObject();

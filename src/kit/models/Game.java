@@ -171,11 +171,27 @@ public class Game implements IJson {
         altName = name;
     }
 
-    public boolean isTheSame(Game game) {
-        if (this.getDirectory().equals(game.getDirectory())) {
+    public boolean isTheSame(Game game, JSONObject settings) {
+        String ownDir =  parseRealDirectory(settings);
+        String alienDir = game.parseRealDirectory(settings);
+        if (ownDir.equals(alienDir)) {
             return true;
         }
         return false;
+    }
+
+    protected String parseRealDirectory(JSONObject settings)
+    {
+        String gamesDir = settings.optString(Config.Keys.LOCAL_GAMES_DIRECTORY_PATH.getKey(),"");
+        if(!gamesDir.isEmpty())
+        {
+            char lastChar = gamesDir.charAt(gamesDir.length() - 1);
+            gamesDir = lastChar == '\\' ? gamesDir : gamesDir + '\\';
+            String[] parts =  this.getDirectory().replace(gamesDir,"").split("\\\\");
+            return parts[0];
+        }
+
+        return this.getDirectory();
     }
 
     public void setVdf(JSONObject obj) {
@@ -199,11 +215,11 @@ public class Game implements IJson {
     }
 
     public String getIntendedTitle() {
-        if (this.getSelectedSteamGame() != null) {
-            return this.getSelectedSteamGame().getName();
-        }
         if (this.getAltName() != null && !this.getAltName().isEmpty()) {
             return this.getAltName();
+        }
+        if (this.getSelectedSteamGame() != null) {
+            return this.getSelectedSteamGame().getName();
         }
         return this.getDirectory();
     }

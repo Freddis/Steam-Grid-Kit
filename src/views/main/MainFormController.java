@@ -46,6 +46,8 @@ public class MainFormController {
     @FXML
     public Button buttonShowOptions;
     @FXML
+    public Button buttonTransfer;
+    @FXML
     private ChoiceBox<String> choiceBoxTask;
     @FXML
     private Node container;
@@ -91,12 +93,17 @@ public class MainFormController {
                 buttonShowOptions,
                 checkboxUseCache,
                 choiceBoxTask,
+                buttonTransfer
         }, buttonStart, this::start, this::stop);
         logger.log("App started");
         settings = jsonHelper.readJsonFromFile(Config.getPropsJsonFilePath());
         this.initControls(settings);
     }
 
+    /**
+     * Initializing FXML controls, filling inputs, etc.
+     * @param settings Settings JSON file
+     */
     private void initControls(JSONObject settings) {
         if (settings.has(Config.Keys.VDF_FILE.getKey())) {
             String val = settings.getString(Config.Keys.VDF_FILE.getKey());
@@ -123,6 +130,9 @@ public class MainFormController {
         this.reCacheImages();
     }
 
+    /**
+     * Caching covers for games in the table. Otherwise it will be slow.
+     */
     private void reCacheImages() {
         logger.log("Re-caching thumbnails");
         images.clear();
@@ -246,7 +256,7 @@ public class MainFormController {
         if (result.isPresent() && result.get() == ButtonType.OK) {
             logger.log("Deleting game: " + game.getDirectory());
             games.remove(game);
-            JSONArray ignoredGames = settings.getJSONArray(Config.Keys.IGNORED_FOLDERS_NAMES.getKey());
+            JSONArray ignoredGames = settings.optJSONArray(Config.Keys.IGNORED_FOLDERS_NAMES.getKey());
             ignoredGames = ignoredGames != null ? ignoredGames : new JSONArray();
             ignoredGames.put(game.getDirectory());
 

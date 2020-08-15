@@ -2,13 +2,10 @@ package views.options;
 
 import com.sun.deploy.uitoolkit.impl.fx.HostServicesFactory;
 import com.sun.javafx.application.HostServicesDelegate;
-import com.sun.scenario.Settings;
 import javafx.application.Platform;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import kit.Config;
 import kit.griddb.SteamGridDbClient;
@@ -21,16 +18,17 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.function.Consumer;
 
 public class OptionsController {
     public TextArea textAreaIgnoredFolderNames;
     public TextField textFieldLocalGamesPath;
-    public TextField textFieldLocalVdfPath;
+    public TextField textFieldLocalShortcutsPath;
     public TextField textFieldSteamGridDbApiKey;
     public Button buttonSave;
     public Button buttonClear;
+    public Label labelLocalGamesPath;
+    public Label labelLocalShortcutsPath;
 
     private JSONObject settings;
     private JsonHelper jsonHelper;
@@ -44,8 +42,16 @@ public class OptionsController {
         this.jsonHelper = new JsonHelper(logger);
         loadCommaSeparatedValues(settings, Config.Keys.IGNORED_FOLDERS_NAMES.getKey(), textAreaIgnoredFolderNames);
         textFieldLocalGamesPath.setText(settings.optString(Config.Keys.LOCAL_GAMES_DIRECTORY_PATH.getKey(), ""));
-        textFieldLocalVdfPath.setText(settings.optString(Config.Keys.LOCAL_VDF_PATH.getKey(), ""));
+        textFieldLocalShortcutsPath.setText(settings.optString(Config.Keys.LOCAL_VDF_PATH.getKey(), ""));
         textFieldSteamGridDbApiKey.setText(settings.optString(Config.Keys.STEAM_GRID_DB_API_KEY.getKey(),""));
+        if(!Config.isRemoteProcessingAllowed())
+        {
+            VBox parent = (VBox) textFieldLocalGamesPath.getParent();
+            parent.getChildren().remove(textFieldLocalShortcutsPath);
+            parent.getChildren().remove(labelLocalShortcutsPath);
+            parent.getChildren().remove(textFieldLocalGamesPath);
+            parent.getChildren().remove(labelLocalGamesPath);
+        }
         this.onSave = onSave;
     }
 
@@ -74,13 +80,15 @@ public class OptionsController {
 
             addCommaSeparatedValues(settings, Config.Keys.IGNORED_FOLDERS_NAMES.getKey(), textAreaIgnoredFolderNames);
 
-            if (textFieldLocalGamesPath.getText() != null) {
-                String val = textFieldLocalGamesPath.getText().trim();
-                settings.put(Config.Keys.LOCAL_GAMES_DIRECTORY_PATH.getKey(), val.isEmpty() ? null : val);
-            }
-            if (textFieldLocalVdfPath.getText() != null) {
-                String val = textFieldLocalVdfPath.getText().trim();
-                settings.put(Config.Keys.LOCAL_VDF_PATH.getKey(), val.isEmpty() ? null : val);
+            if(Config.isRemoteProcessingAllowed()) {
+                if (textFieldLocalGamesPath.getText() != null) {
+                    String val = textFieldLocalGamesPath.getText().trim();
+                    settings.put(Config.Keys.LOCAL_GAMES_DIRECTORY_PATH.getKey(), val.isEmpty() ? null : val);
+                }
+                if (textFieldLocalShortcutsPath.getText() != null) {
+                    String val = textFieldLocalShortcutsPath.getText().trim();
+                    settings.put(Config.Keys.LOCAL_VDF_PATH.getKey(), val.isEmpty() ? null : val);
+                }
             }
             jsonHelper.writeJsonToFile(Config.getPropsJsonFilePath(), settings);
             Stage stage = (Stage) textAreaIgnoredFolderNames.getScene().getWindow();

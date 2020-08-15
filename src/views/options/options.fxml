@@ -23,18 +23,18 @@
                             <Insets top="5.0" />
                         </VBox.margin>
                     </TextArea>
-               <Label text="Real Games Path (Needed only if Steam Grid Kit is used via network)">
+               <Label fx:id="labelLocalGamesPath" text="Real Games Path (Needed only if Steam Grid Kit is used via network)">
                   <VBox.margin>
                      <Insets top="10.0" />
                   </VBox.margin>
                </Label>
                <TextField fx:id="textFieldLocalGamesPath" />
-               <Label text="Local Shortcuts Path (Needed only if Steam Grid Kit is used over network)">
+               <Label fx:id="labelLocalShortcutsPath" text="Local Shortcuts Path (Needed only if Steam Grid Kit is used over network)">
                   <VBox.margin>
                      <Insets top="10.0" />
                   </VBox.margin>
                </Label>
-               <TextField fx:id="textFieldLocalVdfPath" />
+               <TextField fx:id="textFieldLocalShortcutsPath" />
                <AnchorPane prefHeight="35.0">
                   <children>
                      <Label text="SteamGridDb Api Key" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="5.0" />

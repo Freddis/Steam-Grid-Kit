@@ -38,8 +38,8 @@ public class VdfWriter {
         obj.put(VdfKey.OPEN_VR.getKey(), false);
         obj.put(VdfKey.DEVKIT.getKey(), false);
         obj.put(VdfKey.DEVKIT_GAME_ID.getKey(), "");
-        obj.put(VdfKey.LAST_PLAY_TIME.getKey(), new String(new char[]{0x0, 0x0, 0x0, 0x0}));
-        obj.put(VdfKey.TAGS.getKey(), "");
+        obj.put(VdfKey.LAST_PLAY_TIME.getKey(), false);
+        obj.put(VdfKey.TAGS.getKey(), new JSONArray());
 
         if (originalVdf == null) {
             return obj;

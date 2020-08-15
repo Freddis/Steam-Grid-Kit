@@ -54,7 +54,7 @@ public class ShortcutParser implements ITask {
         JSONArray data = reader.parse(file);
 
         String gamePath = settings.optString(Config.Keys.LOCAL_GAMES_DIRECTORY_PATH.getKey(), null);
-        if (gamePath == null) {
+        if (gamePath == null || gamePath.isEmpty()) {
             gamePath = settings.optString(Config.Keys.GAMES_DIRECTORY_PATH.getKey(), null);
         }
 
@@ -65,7 +65,7 @@ public class ShortcutParser implements ITask {
         for (int i = 0; i < data.length(); i++) {
             JSONObject row = data.getJSONObject(i);
             Game game =  this.createGame(row,gamePath);
-            Optional<Game> original = Arrays.stream(games.toArray(new Game[0])).filter(g -> g.isTheSame(game)).findFirst();
+            Optional<Game> original = Arrays.stream(games.toArray(new Game[0])).filter(g -> g.isTheSame(game, settings)).findFirst();
             boolean gameIgnored = Arrays.stream(ignored).anyMatch(str -> str.equals(game.getDirectory()));
             if(gameIgnored)
             {
@@ -89,7 +89,7 @@ public class ShortcutParser implements ITask {
 
     private Game createGame(JSONObject vdf, String path) {
         String separator = "\\\\";
-        if(path.charAt(path.length()-1) != '\\')
+        if(!path.isEmpty() && path.charAt(path.length()-1) != '\\')
         {
             path += '\\';
         }
@@ -97,7 +97,7 @@ public class ShortcutParser implements ITask {
         exe = exe.substring(1,exe.length()-1);
 
         String directory = exe;
-        boolean inGamesFolder = exe.indexOf(path) == 0;
+        boolean inGamesFolder = path.length() > 0 && exe.indexOf(path) == 0;
         if(inGamesFolder)
         {
             String relativeExe = exe.replace(path,"");
@@ -115,6 +115,11 @@ public class ShortcutParser implements ITask {
 
     private File copyVdfFile() {
         String filePath = settings.optString(Config.Keys.VDF_FILE.getKey(), null);
+        if(filePath == null)
+        {
+            logger.log("VDF file is not set");
+            return null;
+        }
         logger.log("Trying to copy vdf from " + filePath);
         String localVdfPath = Config.getVdfFilePath();
         File destination = new File(localVdfPath);

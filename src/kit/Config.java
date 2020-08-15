@@ -5,7 +5,17 @@ import java.io.IOException;
 
 public class Config {
 
-    boolean isRemote = true;
+    /**
+     * This flag needed if you want to run the app remotely via FTP, SMB or similar protocols.
+     * It's needed for me to since I develop on Mac and the Steam PC is the machine dedicated entirely to games.
+     * This flags turns on rewriting of paths for the images and game folders to the windows style.
+     *
+     * @return True if remote processing is allowed.
+     */
+    public static boolean isRemoteProcessingAllowed()
+    {
+        return false;
+    }
 
     public static String getPropsJsonFilePath() {
         return getJarPath() + "/SteamGridKit.json";
@@ -77,6 +87,9 @@ public class Config {
         }
     }
 
+    /**
+     * Enumeration for types of tasks that you can run for the games.
+     */
     public enum Task {
         ALL("All"),
         FIND_EXISTING_SHORTCUTS("Find Existing Shortcuts"),

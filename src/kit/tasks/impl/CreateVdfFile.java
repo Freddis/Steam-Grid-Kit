@@ -96,6 +96,7 @@ public class CreateVdfFile implements ITask {
             String ext = headerFile != null && headerFile.getAbsolutePath().contains(".png") ? ".png" : ".jpg";
             String imagePath = imageDir + "\\" + game.getId() + "header.jpg";
             writer.addLine(game.getIntendedTitle(), game.getSelectedExe(), imagePath, game.getVdf());
+
         }
         return writer.getVdfContent();
     }
