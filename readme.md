@@ -3,7 +3,6 @@ Steam Grid Kit
 
 What is it for
 --------------------------------------
-
 Steam Grid Kit is an app that helps you to manage your Steam shortcuts. It has 3 separate purposes:
 
 1. Preventing your shortcuts from being deleted from Steam. The bug that deletes your shortcuts is still present in 2020.
@@ -23,6 +22,8 @@ Adding your games to Steam
 1. Set the path to shortcuts.vdf file
 2. Set the path to your games directory
 3. Press Start
+
+![Test Image 3](./readme/1.jpg)
 
 Tasks
 ----------------
