@@ -1,6 +1,5 @@
 package kit.griddb;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import javafx.util.Pair;
 import kit.http.HttpClient;
 import org.json.JSONArray;
@@ -11,7 +10,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.IntFunction;
 
 public class SteamGridDbClient {
 

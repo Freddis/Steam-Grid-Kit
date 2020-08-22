@@ -1,7 +1,5 @@
 package views.game;
 
-import com.sun.deploy.uitoolkit.impl.fx.HostServicesFactory;
-import com.sun.javafx.application.HostServicesDelegate;
 import com.sun.javafx.collections.ObservableListWrapper;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -19,6 +17,7 @@ import kit.models.Game;
 import kit.models.SteamGame;
 import kit.utils.JsonHelper;
 import kit.utils.Logger;
+import kit.utils.UrlOpener;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -122,8 +121,8 @@ public class GameController {
         int selected = choiceBoxGame.getSelectionModel().getSelectedIndex();
         SteamGame steamGame = game.getFoundSteamGames().get(selected);
         String uri = steamGame.getSteamPageUrl();
-        HostServicesDelegate hostServices = HostServicesFactory.getInstance(kit.Main.getCurrent());
-        hostServices.showDocument(uri);
+        UrlOpener opener = new UrlOpener();
+        opener.open(uri);
     }
 
     public void findGames(Runnable runnable) {

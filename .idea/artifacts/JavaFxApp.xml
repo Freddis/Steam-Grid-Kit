@@ -1,11 +1,18 @@
 <component name="ArtifactManager">
   <artifact type="javafx" name="JavaFxApp">
-    <output-path>/Volumes/D/SteamGridKit</output-path>
+    <output-path>$PROJECT_DIR$/out/JavaFxApp</output-path>
     <properties id="javafx-properties">
       <options>
         <option name="appClass" value="kit.Main" />
         <option name="description" value="" />
         <option name="htmlPlaceholderId" value="" />
+        <option name="icons">
+          <JavaFxApplicationIcons>
+            <option name="windowsIcon" value="$PROJECT_DIR$/assets/steam.ico" />
+          </JavaFxApplicationIcons>
+        </option>
+        <option name="msgOutputLevel" value="Verbose" />
+        <option name="nativeBundle" value="exe" />
         <option name="title" value="Steam Grid Kit" />
         <option name="vendor" value="Home Studio" />
         <option name="version" value="1.0.0" />
