@@ -1,5 +1,5 @@
 <component name="ArtifactManager">
-  <artifact type="javafx" name="JavaFxApp">
+  <artifact type="javafx" name="Steam Grid Kit">
     <output-path>$PROJECT_DIR$/out/JavaFxApp</output-path>
     <properties id="javafx-properties">
       <options>

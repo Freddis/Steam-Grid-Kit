@@ -48,7 +48,14 @@ public class VdfReader {
         String start = x00 + "shortcuts" + x00 + x00;
         String end = "" + x08 + x08 + x08 + x08;
         String lineDelimiter = "" + x08 + x08 + x00;
-        content = content.replace(start, "").substring(0, content.length() - start.length() - end.length());
+
+        int len = content.length() - start.length() - end.length();
+        if(len < 0)
+        {
+            //empty shortcuts
+            return new JSONArray();
+        }
+        content = content.replace(start, "").substring(0, len);
         String[] lines = content.split(lineDelimiter);
 
         JSONArray arr = new JSONArray();

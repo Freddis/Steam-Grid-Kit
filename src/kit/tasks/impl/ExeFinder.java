@@ -51,7 +51,7 @@ public class ExeFinder extends GameTask {
             return aResult > bResult ? -1 : 1;
         });
 
-        String localPath = settings.getString(Config.Keys.LOCAL_GAMES_DIRECTORY_PATH.getKey());
+        String localPath = settings.optString(Config.Keys.LOCAL_GAMES_DIRECTORY_PATH.getKey());
         ArrayList<String> execPaths = new ArrayList<>();
 
         if (localPath != null) {

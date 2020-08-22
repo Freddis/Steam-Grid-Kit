@@ -26,8 +26,8 @@ public class TransferImages extends GameTask {
         String filePath = settings.optString(Config.Keys.VDF_FILE.getKey(), null);
         File existingVdfFile = new File(filePath);
         File imageDir = new File(existingVdfFile.getParent(), "grid");
-        if (!imageDir.exists() || !imageDir.isDirectory() && !imageDir.canWrite()) {
-            logger.log("Cannot find or read directory: " + imageDir.getAbsolutePath());
+        if (!imageDir.exists() && !imageDir.mkdir()) {
+            logger.log("ERROR: Cannot find or create directory: " + imageDir.getAbsolutePath());
             finishCallback.accept(false);
             return;
         }
