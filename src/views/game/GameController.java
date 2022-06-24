@@ -1,7 +1,5 @@
 package views.game;
 
-import com.sun.deploy.uitoolkit.impl.fx.HostServicesFactory;
-import com.sun.javafx.application.HostServicesDelegate;
 import com.sun.javafx.collections.ObservableListWrapper;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -10,6 +8,8 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -21,7 +21,9 @@ import kit.utils.JsonHelper;
 import kit.utils.Logger;
 import org.json.JSONObject;
 
+import java.awt.*;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 
 public class GameController {
@@ -122,8 +124,14 @@ public class GameController {
         int selected = choiceBoxGame.getSelectionModel().getSelectedIndex();
         SteamGame steamGame = game.getFoundSteamGames().get(selected);
         String uri = steamGame.getSteamPageUrl();
-        HostServicesDelegate hostServices = HostServicesFactory.getInstance(kit.Main.getCurrent());
-        hostServices.showDocument(uri);
+        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            try {
+                Desktop.getDesktop().browse(new URI(uri));
+            }
+            catch (Exception e){
+
+            }
+        }
     }
 
     public void findGames(Runnable runnable) {

@@ -1,9 +1,11 @@
 package views.options;
 
-import com.sun.deploy.uitoolkit.impl.fx.HostServicesFactory;
-import com.sun.javafx.application.HostServicesDelegate;
 import javafx.application.Platform;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -14,8 +16,10 @@ import kit.utils.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
@@ -177,7 +181,13 @@ public class OptionsController {
 
     public void gotoSteamGridDbWebsite(MouseEvent mouseEvent) {
         String uri = "https://www.steamgriddb.com/profile/preferences";
-        HostServicesDelegate hostServices = HostServicesFactory.getInstance(kit.Main.getCurrent());
-        hostServices.showDocument(uri);
+        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            try {
+                Desktop.getDesktop().browse(new URI(uri));
+            }
+            catch (Exception e){
+
+            }
+        }
     }
 }

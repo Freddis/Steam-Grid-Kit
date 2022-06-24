@@ -54,7 +54,7 @@
                                 <TableColumn fx:id="tableColumnExecs" maxWidth="1000.0" prefWidth="200.0" text="Exe" />
                                 <TableColumn fx:id="tableColumnImageHeader" minWidth="0.0" prefWidth="150.0" text="Header" />
                                 <TableColumn fx:id="tableColumnImageCover" prefWidth="150.0" text="Cover" />
-                                <TableColumn fx:id="tableColumnActions" prefWidth="100.0" text="Actions" />
+                                <TableColumn fx:id="tableColumnActions" prefWidth="150.0" text="Actions" />
                             </columns>
                         </TableView>
                     </AnchorPane>
