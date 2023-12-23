@@ -2,12 +2,18 @@ package kit.models;
 
 import kit.Config;
 import kit.interfaces.IJson;
+import kit.interfaces.ILogger;
+import kit.utils.BinaryOperations;
+import kit.utils.Logger;
+import kit.vdf.VdfKey;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
@@ -19,6 +25,7 @@ public class Game implements IJson {
     private final ArrayList<SteamGame> foundSteamGames = new ArrayList<>();
     private int selectedExeIndex;
     private int selectedSteamGameIndex;
+    private long appId;
     private JSONObject vdf;
 
     public Game(JSONObject obj) {
@@ -28,6 +35,12 @@ public class Game implements IJson {
 
     public Game(String directory) {
         this.directory = directory;
+        this.appId = this.generateAppId();
+    }
+
+    private long generateAppId() {
+        BinaryOperations utils = new BinaryOperations();
+        return utils.generateLong();
     }
 
     public String getDirectory() {
@@ -41,6 +54,7 @@ public class Game implements IJson {
     public JSONObject toJson() {
         JSONObject obj = new JSONObject();
         obj.put("directory", directory);
+        obj.put("appId", appId);
         obj.put("altName", altName);
         obj.put("selectedExeIndex", selectedExeIndex);
         obj.put("selectedSteamGameIndex", selectedSteamGameIndex);
@@ -58,6 +72,12 @@ public class Game implements IJson {
         altName = obj.optString("altName", null);
         selectedSteamGameIndex = obj.optInt("selectedSteamGameIndex", 0);
         vdf = obj.optJSONObject("vdf");
+        if(vdf != null){
+            this.appId = this.getAppIdFromVDF();
+        }
+        else{
+            this.appId = obj.getLong("appId");
+        }
         JSONArray execsJson = obj.optJSONArray("execs");
         for (int i = 0; i < execsJson.length(); i++) {
             execs.add(execsJson.getString(i));
@@ -69,6 +89,16 @@ public class Game implements IJson {
             foundSteamGames.add(game);
         }
         return true;
+    }
+
+    private long getAppIdFromVDF() {
+        JSONObject obj = this.vdf.optJSONObject(VdfKey.APP_ID.getKey());
+        if(obj == null){
+            return this.appId;
+        }
+        String str = obj.getString("value");
+        BinaryOperations utils = new BinaryOperations();
+        return utils.stringToLong(str);
     }
 
     public boolean isReadyToExport() {
@@ -225,20 +255,23 @@ public class Game implements IJson {
     }
 
     public String getId() {
-        String target = this.getSelectedExe() != null ? this.getSelectedExe() : "";
-        String name = this.getIntendedTitle();
-        String seed = '"' + target + '"' + name;
+        return String.valueOf(this.appId);
 
-        Checksum checksum = new CRC32();
+        // decided to keep the old code as a reminder how fucked up it was to figure that out
 
-        // update the current checksum with the specified array of bytes
-        byte[] bytes = seed.getBytes(StandardCharsets.UTF_8);
-        checksum.update(bytes, 0, bytes.length);
-        // get the current checksum value
-        long checksumValue = checksum.getValue();
-        long x = 0x80000000;
-        long res = checksumValue | -1 * x;
-        return String.valueOf(res);
+//        String target = this.getSelectedExe() != null ? this.getSelectedExe() : "";
+//        String name = this.getIntendedTitle();
+//        String seed = '"' + target + '"' + name;
+//
+//        Checksum checksum = new CRC32();
+//        // update the current checksum with the specified array of bytes
+//        byte[] bytes = seed.getBytes(StandardCharsets.UTF_8);
+//        checksum.update(bytes, 0, bytes.length);
+//        // get the current checksum value
+//        long checksumValue = checksum.getValue();
+//        long x = 0x80000000;
+//        long res = checksumValue | -1 * x;
+//        return String.valueOf(res);
     }
 
     public String getCustomHeaderImagePath() {
@@ -255,5 +288,22 @@ public class Game implements IJson {
 
     public String getCustomLogoImagePath() {
         return Config.getImageDirectory() + "/" + this.getImageDirectoryName() + "/setlogo.png";
+    }
+
+    public String getAppIdAsString(ILogger logger) {
+        if(this.vdf != null){
+            JSONObject obj = this.vdf.optJSONObject(VdfKey.APP_ID.getKey());
+            if(obj != null){
+                String str = obj.getString("value");
+                return str;
+            }
+        }
+         BinaryOperations utils = new BinaryOperations();
+         String result = utils.longToString(this.appId);
+         return result;
+    }
+
+    public void setAppId(long i) {
+        this.appId = i;
     }
 }

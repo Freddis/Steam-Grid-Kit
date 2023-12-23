@@ -2,6 +2,7 @@ package kit.vdf;
 
 public enum VdfKey {
 
+    APP_ID("appid"),
     APP_NAME("appname"),
     EXE_PATH("exe"),
     START_DIR("StartDir"),

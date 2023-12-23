@@ -2,6 +2,7 @@ package kit.utils;
 
 import javafx.util.Callback;
 import kit.interfaces.IJson;
+import kit.interfaces.ILogger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -12,9 +13,9 @@ import java.util.ArrayList;
 
 public class JsonHelper {
 
-    private final Logger logger;
+    private final ILogger logger;
 
-    public JsonHelper(Logger logger) {
+    public JsonHelper(ILogger logger) {
         this.logger = logger;
     }
 

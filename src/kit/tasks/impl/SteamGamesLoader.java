@@ -1,6 +1,7 @@
 package kit.tasks.impl;
 
 import kit.Config;
+import kit.interfaces.ILogger;
 import kit.interfaces.ITask;
 import kit.utils.FileLoader;
 import kit.utils.JsonHelper;
@@ -16,13 +17,13 @@ import java.util.function.Consumer;
 public class SteamGamesLoader implements ITask {
 
     private final FileLoader loader;
-    private final Logger logger;
+    private final ILogger logger;
     private final File tempLocation;
     private final boolean useCache;
     private final JsonHelper helper;
     private Consumer<Boolean> finishCallback;
 
-    public SteamGamesLoader(Logger logger, JSONObject config) {
+    public SteamGamesLoader(ILogger logger, JSONObject config) {
         this.logger = logger;
         String url = "http://api.steampowered.com/ISteamApps/GetAppList/v0002/?format=json";
         tempLocation = new File(Config.getJarPath(), "tmp.json");

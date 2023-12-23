@@ -1,7 +1,7 @@
 package kit.tasks;
 
+import kit.interfaces.ILogger;
 import kit.interfaces.ITask;
-import kit.utils.Logger;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -9,10 +9,10 @@ import java.util.function.Consumer;
 public abstract class ListTask<T> implements ITask {
 
     protected Consumer<Boolean> finishCallback;
-    protected final Logger logger;
+    protected final ILogger logger;
     private Thread thread;
 
-    public ListTask(Logger logger) {
+    public ListTask(ILogger logger) {
         this.logger = logger;
         this.finishCallback = a -> {
         };

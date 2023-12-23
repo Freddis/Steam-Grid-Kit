@@ -1,4 +1,4 @@
-package kit.tests.utils;
+package tests.utils;
 
 import kit.interfaces.ILogger;
 

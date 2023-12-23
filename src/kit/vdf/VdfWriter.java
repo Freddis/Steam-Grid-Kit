@@ -14,12 +14,18 @@ public class VdfWriter {
     char x08 = 0x08;
     ArrayList<JSONObject> lines = new ArrayList<>();
 
-    public void addLine(String name, String exePath, String imagePath, JSONObject originalVdf) {
+    public void addLine(String appId, String name, String exePath, String imagePath, JSONObject originalVdf) {
         String[] parts = exePath.split("\\\\");
         String exeDir = String.join("\\", Arrays.copyOf(parts, parts.length - 1)) + "\\";
         String quotedExePath = '"' + exePath + '"';
 
         JSONObject line = this.createVdfLine(originalVdf);
+        // dates and integers are the same format in vdf
+        JSONObject appIdObj = new JSONObject();
+        appIdObj.put("type", "date");
+        appIdObj.put("value", appId);
+
+        line.put(VdfKey.APP_ID.getKey(), appIdObj);
         line.put(VdfKey.APP_NAME.getKey(), name);
         line.put(VdfKey.EXE_PATH.getKey(), '"' + exePath + '"');
         line.put(VdfKey.START_DIR.getKey(), '"' + exeDir + '"');

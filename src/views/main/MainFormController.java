@@ -16,6 +16,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import kit.Config;
+import kit.interfaces.ILogger;
 import kit.interfaces.ITask;
 import kit.models.Game;
 import kit.tasks.GameTask;
@@ -131,7 +132,7 @@ public class MainFormController {
     }
 
     /**
-     * Caching covers for games in the table. Otherwise it will be slow.
+     * Caching covers for games in the table. Otherwise, it will be slow.
      */
     private void reCacheImages() {
         logger.log("Re-caching thumbnails");

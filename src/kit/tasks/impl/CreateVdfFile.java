@@ -1,6 +1,7 @@
 package kit.tasks.impl;
 
 import kit.Config;
+import kit.interfaces.ILogger;
 import kit.interfaces.ITask;
 import kit.models.Game;
 import kit.utils.JsonHelper;
@@ -20,11 +21,11 @@ import java.util.function.Consumer;
 
 public class CreateVdfFile implements ITask {
 
-    private final Logger logger;
+    private final ILogger logger;
     private final JSONObject settings;
     private Consumer<Boolean> finishCallback;
 
-    public CreateVdfFile(Logger logger, JSONObject settings) {
+    public CreateVdfFile(ILogger logger, JSONObject settings) {
         this.settings = settings;
         this.logger = logger;
         finishCallback = p -> {
@@ -33,7 +34,7 @@ public class CreateVdfFile implements ITask {
 
     @Override
     public String getStatusString() {
-        return "Creating new shortucts file";
+        return "Creating new shortcuts file";
     }
 
     @Override
@@ -43,22 +44,25 @@ public class CreateVdfFile implements ITask {
 
     @Override
     public void start(Consumer<Double> tickCallback) {
-        logger.log("Creating new vdf file");
-        if (!this.backUpExistingVdf()) {
+        try {
+            logger.log("Creating new vdf file");
+            if (!this.backUpExistingVdf()) {
+                finishCallback.accept(false);
+                return;
+            }
+            String content = this.createVdfContent();
+            if (!writeContentToShortcutsFile(content)) {
+                finishCallback.accept(false);
+                return;
+            }
+            finishCallback.accept(true);
+        } catch (Exception e) {
             finishCallback.accept(false);
-            return;
         }
-        String content = this.createVdfContent();
-        if (!writeContentToShortcutsFile(content)) {
-            finishCallback.accept(false);
-            return;
-        }
-        finishCallback.accept(true);
     }
 
     private boolean writeContentToShortcutsFile(String content) {
         String filePath = settings.optString(Config.Keys.VDF_FILE.getKey(), null);
-//        filePath = Config.getJarPath()+"/test.vdf";
         File existingVdfFile = new File(filePath);
         if (existingVdfFile.exists() && !existingVdfFile.delete()) {
             logger.log("Cannot delete vdf file" + existingVdfFile.getAbsolutePath());
@@ -81,7 +85,7 @@ public class CreateVdfFile implements ITask {
         return true;
     }
 
-    private String createVdfContent() {
+    private String createVdfContent() throws Exception {
 
         String filePath = settings.optString(Config.Keys.VDF_FILE.getKey(), null);
         File existingVdfFile = new File(filePath);
@@ -89,13 +93,19 @@ public class CreateVdfFile implements ITask {
         JsonHelper helper = new JsonHelper(logger);
         ArrayList<Game> games = helper.toList(Game::new, settings.getJSONArray(Config.Keys.GAMES.getKey()));
 
+        String gamesPath = settings.optString(Config.Keys.GAMES_DIRECTORY_PATH.getKey(),null);
+        if(gamesPath == null){
+            throw new Exception("Game path has to be set.");
+        }
+
         VdfWriter writer = new VdfWriter();
         String imageDir = this.getSteamImageDirPath(existingVdfFile);
         for (Game game : games) {
             File headerFile = game.getHeaderImageFile();
             String ext = headerFile != null && headerFile.getAbsolutePath().contains(".png") ? ".png" : ".jpg";
             String imagePath = imageDir + "\\" + game.getId() + "header.jpg";
-            writer.addLine(game.getIntendedTitle(), game.getSelectedExe(), imagePath, game.getVdf());
+            String fullGameExePath = gamesPath+"\\" + game.getSelectedExe();
+            writer.addLine(game.getAppIdAsString(logger),game.getIntendedTitle(), game.getSelectedExe(), imagePath, game.getVdf());
 
         }
         return writer.getVdfContent();

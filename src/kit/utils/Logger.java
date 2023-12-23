@@ -2,11 +2,12 @@ package kit.utils;
 
 import javafx.application.Platform;
 import javafx.scene.control.TextArea;
+import kit.interfaces.ILogger;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class Logger {
+public class Logger implements ILogger {
 
     private final TextArea logTextArea;
 

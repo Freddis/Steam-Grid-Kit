@@ -5,6 +5,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -137,6 +138,23 @@ public class VdfReader {
         }
         String dateStr = new String(unsignedGoodBytes);
         JSONObject date = new JSONObject();
+        // experiments with bytes
+//        int x  = ((0xFF & crappySignedBytes[0]) << 24) | ((0xFF & crappySignedBytes[1]) << 16) |
+//                ((0xFF & crappySignedBytes[2]) << 8) | (0xFF & crappySignedBytes[3]);
+//        long y  = ((0xFF & unsignedGoodBytes[3]) << 24) | ((0xFF & unsignedGoodBytes[2]) << 16) |
+//                ((0xFF & unsignedGoodBytes[1]) << 8) | (0xFF & unsignedGoodBytes[0]);
+//        StringBuilder hexStrBuilder = new StringBuilder();
+//        for(int i = unsignedGoodBytes.length-1; i >= 0; i--){
+//            hexStrBuilder.append(String.format("%02X",crappySignedBytes[i]));
+//        }
+//
+//
+//        String hexValue = hexStrBuilder.toString();
+//        long number = Long.parseLong(hexValue,16);
+//        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+//        buffer.putLong(number);
+//        byte[] bytes = buffer.array();
+
         date.put("type", "date");
         date.put("value", dateStr);
         result.put(name, date);

@@ -1,6 +1,7 @@
 package kit.tasks;
 
 import kit.Config;
+import kit.interfaces.ILogger;
 import kit.models.Game;
 import kit.utils.JsonHelper;
 import kit.utils.Logger;
@@ -20,7 +21,7 @@ public abstract class GameTask extends ListTask<Game> {
     private final JsonHelper helper;
     private Game game;
 
-    public GameTask(Logger logger, JSONObject settings) {
+    public GameTask(ILogger logger, JSONObject settings) {
         super(logger);
         this.settings = settings;
         this.helper = new JsonHelper(logger);

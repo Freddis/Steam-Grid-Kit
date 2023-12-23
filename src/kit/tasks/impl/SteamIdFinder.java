@@ -2,6 +2,7 @@ package kit.tasks.impl;
 
 import javafx.util.Pair;
 import kit.Config;
+import kit.interfaces.ILogger;
 import kit.models.Game;
 import kit.models.SteamGame;
 import kit.tasks.GameTask;
@@ -20,7 +21,7 @@ public class SteamIdFinder extends GameTask {
     private final JsonHelper helper;
     private ArrayList<SteamGame> steamLibrary;
 
-    public SteamIdFinder(Logger logger, JSONObject settings) {
+    public SteamIdFinder(ILogger logger, JSONObject settings) {
         super(logger, settings);
         helper = new JsonHelper(logger);
     }
