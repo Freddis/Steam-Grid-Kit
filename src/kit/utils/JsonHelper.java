@@ -29,7 +29,7 @@ public class JsonHelper {
             root = new JSONObject(content);
         } catch (Exception e) {
             this.logger.log("Can't parse json from: " + path);
-            e.printStackTrace();
+            //e.printStackTrace();
             return new JSONObject();
         }
         return root;

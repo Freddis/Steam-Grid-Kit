@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.stage.*?>
 
-<Stage maxHeight="400.0" maxWidth="540.0" minHeight="400.0" minWidth="540.0" title="Settings" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="views.options.OptionsController">
+<Stage maxHeight="400.0" maxWidth="540.0" minHeight="400.0" minWidth="540.0" title="Settings" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="views.options.OptionsController">
     <scene>
         <Scene>
             <AnchorPane prefHeight="400.0" prefWidth="540.0">
@@ -38,8 +38,8 @@
                <AnchorPane prefHeight="35.0">
                   <children>
                      <Label text="SteamGridDb Api Key" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="5.0" />
-                     <Hyperlink onMouseClicked="#gotoSteamGridDbWebsite" text="How to get?" AnchorPane.leftAnchor="250.0" AnchorPane.topAnchor="0.0" />
-                     <Button mnemonicParsing="false" onMouseClicked="#testSteamGridDbApi" text="Test Connection" AnchorPane.leftAnchor="130.0" />
+                     <Hyperlink onMouseClicked="#gotoSteamGridDbWebsite" text="How to get?" AnchorPane.leftAnchor="280.0" AnchorPane.topAnchor="0.0" />
+                     <Button mnemonicParsing="false" onMouseClicked="#testSteamGridDbApi" text="Test Connection" AnchorPane.leftAnchor="150.0" />
                   </children>
                   <VBox.margin>
                      <Insets top="10.0" />

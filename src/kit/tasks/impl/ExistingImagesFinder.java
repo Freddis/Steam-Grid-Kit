@@ -25,7 +25,7 @@ public class ExistingImagesFinder extends GameTask {
         File file = new File(Config.getImageDirectory());
         if(!file.exists() && !file.mkdir())
         {
-            logger.log("Cannot create image dir "+file.getAbsolutePath());
+            logger.log("ERROR: Cannot create image dir "+file.getAbsolutePath());
             finishCallback.accept(false);
             return;
         }
@@ -35,8 +35,8 @@ public class ExistingImagesFinder extends GameTask {
         File imageDir = new File(existingVdfFile.getParent(),"grid");
         if(!imageDir.exists() || !imageDir.isDirectory() && !imageDir.canRead())
         {
-            logger.log("Cannot find or read directory: " + imageDir.getAbsolutePath());
-            finishCallback.accept(false);
+            logger.log("WARNING: Cannot find or read directory: " + imageDir.getAbsolutePath());
+            finishCallback.accept(true);
             return;
         }
         imageFiles = imageDir.listFiles();

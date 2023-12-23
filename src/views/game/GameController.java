@@ -19,6 +19,7 @@ import kit.models.Game;
 import kit.models.SteamGame;
 import kit.utils.JsonHelper;
 import kit.utils.Logger;
+import kit.utils.UrlOpener;
 import org.json.JSONObject;
 
 import java.awt.*;
