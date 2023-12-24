@@ -202,6 +202,10 @@ public class Game implements IJson {
     }
 
     public boolean isTheSame(Game game, JSONObject settings) {
+        if(this.appId == game.appId && this.appId != 0){
+            return true;
+        }
+
         String ownDir =  parseRealDirectory(settings);
         String alienDir = game.parseRealDirectory(settings);
         if (ownDir.equals(alienDir)) {
@@ -213,19 +217,20 @@ public class Game implements IJson {
     protected String parseRealDirectory(JSONObject settings)
     {
         String gamesDir = settings.optString(Config.Keys.LOCAL_GAMES_DIRECTORY_PATH.getKey(),"");
-        if(!gamesDir.isEmpty())
-        {
+        if(!gamesDir.isEmpty()) {
             char lastChar = gamesDir.charAt(gamesDir.length() - 1);
             gamesDir = lastChar == '\\' ? gamesDir : gamesDir + '\\';
             String[] parts =  this.getDirectory().replace(gamesDir,"").split("\\\\");
             return parts[0];
         }
 
-        return this.getDirectory();
+        String result =  this.getDirectory();
+        return result;
     }
 
     public void setVdf(JSONObject obj) {
         this.vdf = obj;
+        this.appId = this.getAppIdFromVDF();
     }
 
     public boolean hasVdf() {

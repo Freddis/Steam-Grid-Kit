@@ -1,6 +1,7 @@
 package kit.tasks.impl;
 
 import kit.Config;
+import kit.interfaces.ILogger;
 import kit.interfaces.ITask;
 import kit.models.Game;
 import kit.utils.JsonHelper;
@@ -19,12 +20,12 @@ import java.util.function.Consumer;
 
 public class ShortcutParser implements ITask {
 
-    private final Logger logger;
+    private final ILogger logger;
     private final JSONObject settings;
     private final boolean useCache;
     private Consumer<Boolean> finishCallback;
 
-    public ShortcutParser(Logger logger, JSONObject settings) {
+    public ShortcutParser(ILogger logger, JSONObject settings) {
         this.logger = logger;
         this.settings = settings;
         this.useCache = settings.optBoolean(Config.Keys.USE_CACHE.getKey(), false);
@@ -64,7 +65,9 @@ public class ShortcutParser implements ITask {
 
         for (int i = 0; i < data.length(); i++) {
             JSONObject row = data.getJSONObject(i);
+            logger.log("Processing game: "+row.getString("exe"));
             Game game =  this.createGame(row,gamePath);
+            logger.log("Directory: "+game.getDirectory());
             Optional<Game> original = Arrays.stream(games.toArray(new Game[0])).filter(g -> g.isTheSame(game, settings)).findFirst();
             boolean gameIgnored = Arrays.stream(ignored).anyMatch(str -> str.equals(game.getDirectory()));
             if(gameIgnored)
@@ -76,7 +79,6 @@ public class ShortcutParser implements ITask {
                 games.add(game);
             }
             else {
-//                game.setAltName(row.getString("appname"));
                 original.get().setVdf(row);
             }
         }
@@ -87,33 +89,37 @@ public class ShortcutParser implements ITask {
         finishCallback.accept(true);
     }
 
-    private Game createGame(JSONObject vdf, String path) {
+    protected Game createGame(JSONObject vdf, String gamesFolderPath) {
         String separator = "\\\\";
-        if(!path.isEmpty() && path.charAt(path.length()-1) != '\\')
-        {
-            path += '\\';
+        if(!gamesFolderPath.isEmpty() && gamesFolderPath.charAt(gamesFolderPath.length()-1) != '\\') {
+            gamesFolderPath += '\\';
         }
         String exe = vdf.getString("exe");
-        exe = exe.substring(1,exe.length()-1);
-
-        String directory = exe;
-        boolean inGamesFolder = path.length() > 0 && exe.indexOf(path) == 0;
-        if(inGamesFolder)
-        {
-            String relativeExe = exe.replace(path,"");
-            String[] parts = relativeExe.split(separator);
-            directory = parts[0];
+        if(exe.charAt(0) == '"') {
+            exe = exe.substring(1,exe.length()-1);
         }
+        String directoryPath = exe;
+        if(directoryPath.charAt(0) == '\\') {
+            // exe should start with \, while directory shouldn't
+            directoryPath = directoryPath.substring(1);
+        }
+        boolean inGamesFolder = !gamesFolderPath.isEmpty() && exe.indexOf(gamesFolderPath) == 0;
+        if(inGamesFolder) {
+            directoryPath = exe.replace(gamesFolderPath,"");
+        }
+        String[] parts = directoryPath.split(separator);
+        String directory = parts[0];
 
         Game game = new Game(directory);
         game.setAltName(vdf.getString("appname"));
         game.getExecs().add(exe);
+        game.setSelectedExe(exe);
         game.setVdf(vdf);
 
         return game;
     }
 
-    private File copyVdfFile() {
+    protected File copyVdfFile() {
         String filePath = settings.optString(Config.Keys.VDF_FILE.getKey(), null);
         if(filePath == null)
         {

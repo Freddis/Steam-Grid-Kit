@@ -62,7 +62,7 @@ public class ExeFinder extends GameTask {
             }
         }
 
-        String currentExe = game.getExecs().size() > 0 ? game.getSelectedExe() : null;
+        String currentExe = !game.getExecs().isEmpty() ? game.getSelectedExe() : null;
         game.getExecs().clear();
         game.getExecs().addAll(execPaths);
         if (currentExe != null) {
