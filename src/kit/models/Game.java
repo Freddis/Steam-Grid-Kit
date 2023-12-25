@@ -18,14 +18,41 @@ import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
 public class Game implements IJson {
-
+    /**
+     * Name of the game directory, serves as the game ID in the app
+     */
     private final String directory;
+    /**
+     * Relative path to executable from the games directory. Starts with "\"
+     */
     private final ArrayList<String> execs = new ArrayList<>();
+    /**
+     * Name that is going to be used for the shortcut if the user doesn't like directory name
+     */
     private String altName;
+
+    /**
+     * List of Steam games that fit the name of the game.
+     */
     private final ArrayList<SteamGame> foundSteamGames = new ArrayList<>();
+    /**
+     * Index of the selected exe file
+     */
     private int selectedExeIndex;
+
+    /**
+     * Index of the selected steam game
+     */
     private int selectedSteamGameIndex;
+    /**
+     * App Id that Steam uses to identify the shortcut. Can be generated.
+     * Without knowing this ID it's not possible to add images, since they have to have this ID in the name.
+     */
     private long appId;
+
+    /**
+     * Original content of VDF line from Steam. Filled when the game already exists in Steam.
+     */
     private JSONObject vdf;
 
     public Game(JSONObject obj) {
@@ -237,8 +264,10 @@ public class Game implements IJson {
         return vdf != null;
     }
 
-    public boolean isLocatedIn(String path) {
-        return getSelectedExe() != null && getSelectedExe().indexOf(path) == 0;
+    public boolean isLocatedIn(String directory) {
+        String dirPath = directory +"\\"+this.getDirectory();
+        File file = new File(dirPath);
+        return file.exists();
     }
 
     public void wipe() {
@@ -310,5 +339,9 @@ public class Game implements IJson {
 
     public void setAppId(long i) {
         this.appId = i;
+    }
+
+    public long getAppId() {
+        return this.appId;
     }
 }

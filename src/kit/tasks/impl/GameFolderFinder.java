@@ -1,6 +1,7 @@
 package kit.tasks.impl;
 
 import kit.Config;
+import kit.interfaces.ILogger;
 import kit.interfaces.ITask;
 import kit.models.Game;
 import kit.utils.JsonHelper;
@@ -11,15 +12,16 @@ import org.json.JSONObject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.function.Consumer;
 
 public class GameFolderFinder implements ITask {
     private final JSONObject settings;
-    private final Logger logger;
+    private final ILogger logger;
     private Consumer<Boolean> finishCallback;
 
-    public GameFolderFinder(Logger logger, JSONObject settings) {
+    public GameFolderFinder(ILogger logger, JSONObject settings) {
         this.settings = settings;
         this.logger = logger;
         this.finishCallback = a -> {
@@ -48,6 +50,8 @@ public class GameFolderFinder implements ITask {
         boolean useCache = settings.optBoolean(Config.Keys.USE_CACHE.getKey(), false);
         String[] ignored = jsonHelper.toStringArray(settings.optJSONArray(Config.Keys.IGNORED_FOLDERS_NAMES.getKey()));
         File[] files = dir.listFiles();
+        Arrays.sort(files);
+
         ArrayList<Game> list = jsonHelper.toList(Game::new, settings.optJSONArray(Config.Keys.GAMES.getKey()));
         //I don't think the next might happen, but better safe than sorry, right?
         if (files == null) {

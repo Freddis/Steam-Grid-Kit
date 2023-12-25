@@ -57,6 +57,7 @@ public class CreateVdfFile implements ITask {
             }
             finishCallback.accept(true);
         } catch (Exception e) {
+            logger.error("Error in creating vdf file",e);
             finishCallback.accept(false);
         }
     }
@@ -104,8 +105,8 @@ public class CreateVdfFile implements ITask {
             File headerFile = game.getHeaderImageFile();
             String ext = headerFile != null && headerFile.getAbsolutePath().contains(".png") ? ".png" : ".jpg";
             String imagePath = imageDir + "\\" + game.getId() + "header.jpg";
-            String fullGameExePath = gamesPath+"\\" + game.getSelectedExe();
-            writer.addLine(game.getAppIdAsString(logger),game.getIntendedTitle(), game.getSelectedExe(), imagePath, game.getVdf());
+            String fullGameExePath = gamesPath + game.getSelectedExe();
+            writer.addLine(game.getAppIdAsString(logger),game.getIntendedTitle(), fullGameExePath, imagePath, game.getVdf());
 
         }
         return writer.getVdfContent();
