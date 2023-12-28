@@ -74,16 +74,6 @@ public class ExeFinder extends GameTask {
         return true;
     }
 
-    private ArrayList<String> convertPathsToLocal(ArrayList<File> execs, String localPath, String remotePath) {
-        ArrayList<String> result = new ArrayList<>();
-        for (File exe : execs) {
-            String path = exe.getAbsolutePath().replace(remotePath, localPath).replace("/","\\");
-            result.add(path);
-        }
-        return result;
-    }
-
-
     private void searchForExecs(File dir, ArrayList<File> execs) throws InterruptedException {
         //Passing control
         Thread.sleep(0);

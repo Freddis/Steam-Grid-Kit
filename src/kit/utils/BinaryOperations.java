@@ -70,7 +70,7 @@ public class BinaryOperations {
         return number;
     }
 
-    public String longToString(Long number){
+    public static String longToString(Long number){
         ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
         buffer.putLong(number);
         byte[] bytes = buffer.array();

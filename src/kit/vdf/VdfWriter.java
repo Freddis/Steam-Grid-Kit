@@ -85,7 +85,6 @@ public class VdfWriter {
         String start = x00 + String.valueOf(id) + x00;
         sb.append(start);
         VdfKey[] orderedKeys = VdfKey.values();
-        BinaryOperations utils = new BinaryOperations();
         for (VdfKey key : orderedKeys) {
             Object val = line.get(key.getKey());
             String strVal;
@@ -99,7 +98,7 @@ public class VdfWriter {
             } else if (val instanceof JSONObject && ((JSONObject) val).optString("type").equals("date")) {
                 type = 0x02;
                 long longVal = ((JSONObject) val).getLong("value");
-                strVal = utils.longToString(longVal);
+                strVal = BinaryOperations.longToString(longVal);
             } else if (val instanceof JSONArray) {
                 type = 0x00;
                 strVal = convertListToString((JSONArray) val);

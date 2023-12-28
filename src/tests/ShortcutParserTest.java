@@ -2,9 +2,7 @@ package tests;
 
 import kit.State;
 import kit.models.Game;
-import kit.tasks.impl.CreateVdfFile;
 import kit.tasks.impl.ShortcutParser;
-import kit.utils.BinaryOperations;
 import kit.utils.JsonHelper;
 import kit.vdf.VdfKey;
 import org.json.JSONObject;
@@ -14,7 +12,6 @@ import tests.utils.TestLogger;
 import tests.utils.TestUtils;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;

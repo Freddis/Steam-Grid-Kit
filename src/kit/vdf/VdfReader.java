@@ -112,54 +112,19 @@ public class VdfReader {
         char b = str.charAt(ref.i++);
         char c = str.charAt(ref.i++);
         char d = str.charAt(ref.i++);
+        //if more than 1 byte is used, then it's a binary date / integer
+
         if (b == x00 && c == x00 && d == x00) {
             boolean res = a == 1;
             result.put(name, res);
             return;
         }
-        BinaryOperations utils = new BinaryOperations();
         String newString = new String(new char[]{a,b,c,d});
-        long value = utils.stringToLong( newString);
+        long value = BinaryOperations.stringToLong( newString);
         JSONObject date = new JSONObject();
         date.put("type", "date");
         date.put("value", value);
         result.put(name, date);
-//        //if more than 1 byte is used, then it's a binary date
-//        //and here comes the problem, you can't read binary as normal chars, since they will be converted to some UTF-8 multibyte crappy chars
-//        //so, we need to convert this part of a string back to original bytes
-//        //but it's not enough, because bytes in Java are signed, so we need to create unsigned chars that will reflect exactly what is written in binary.
-//        byte[] crappySignedBytes = new byte[]{(byte) a, (byte) b, (byte) c, (byte) d};
-//        char[] unsignedGoodBytes = new char[crappySignedBytes.length];
-//        for(int i = 0; i < crappySignedBytes.length; i++ )
-//        {
-//            unsignedGoodBytes[i] = (char) crappySignedBytes[i];
-//            if(crappySignedBytes[i] < 0)
-//            {
-//                unsignedGoodBytes[i] += 256;
-//            }
-//        }
-//        String dateStr = new String(unsignedGoodBytes);
-//        JSONObject date = new JSONObject();
-//        // experiments with bytes
-////        int x  = ((0xFF & crappySignedBytes[0]) << 24) | ((0xFF & crappySignedBytes[1]) << 16) |
-////                ((0xFF & crappySignedBytes[2]) << 8) | (0xFF & crappySignedBytes[3]);
-////        long y  = ((0xFF & unsignedGoodBytes[3]) << 24) | ((0xFF & unsignedGoodBytes[2]) << 16) |
-////                ((0xFF & unsignedGoodBytes[1]) << 8) | (0xFF & unsignedGoodBytes[0]);
-////        StringBuilder hexStrBuilder = new StringBuilder();
-////        for(int i = unsignedGoodBytes.length-1; i >= 0; i--){
-////            hexStrBuilder.append(String.format("%02X",crappySignedBytes[i]));
-////        }
-////
-////
-////        String hexValue = hexStrBuilder.toString();
-////        long number = Long.parseLong(hexValue,16);
-////        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
-////        buffer.putLong(number);
-////        byte[] bytes = buffer.array();
-//
-//        date.put("type", "date");
-//        date.put("value", dateStr);
-//        result.put(name, date);
     }
 
     private String readUntilByte(String str, IndexRef ref, char search) {

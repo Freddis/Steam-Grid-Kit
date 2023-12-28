@@ -66,8 +66,7 @@ public class Game implements IJson {
     }
 
     private long generateAppId() {
-        BinaryOperations utils = new BinaryOperations();
-        return utils.generateLong();
+        return BinaryOperations.generateLong();
     }
 
     public String getDirectory() {
@@ -324,8 +323,7 @@ public class Game implements IJson {
     }
 
     public String getAppIdAsString(ILogger logger) {
-        BinaryOperations utils = new BinaryOperations();
-         String result = utils.longToString(this.appId);
+         String result = BinaryOperations.longToString(this.appId);
          return result;
     }
 
