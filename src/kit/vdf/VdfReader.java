@@ -1,5 +1,6 @@
 package kit.vdf;
 
+import kit.utils.BinaryOperations;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -9,6 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Arrays;
 
 public class VdfReader {
 
@@ -16,32 +18,19 @@ public class VdfReader {
     final char x01 = 0x01; //string
     final char x02 = 0x02; //bool
     final char x08 = 0x08; //ending
-    char[] originalBytes;
 
     public JSONArray parse(File file) {
         String content;
         try {
             byte[] bytes = Files.readAllBytes(file.toPath());
-            ;
-//            content = new String(bytes, StandardCharsets.UTF_8);
-            char[] chars = new char[bytes.length];
-            originalBytes = chars;
-            //byte is signed??? overflows and needs to be corrected
-            //it's funny though that readAllBytes can read only half of the bytes out there xD
-
-            //Since the string contains binary data for dates, it's impossible to read it as UTF-8, since it will destroy the dates as they will be treated as multibyte characters
-            //We can't read the string as single byte either, since bytes are not signed and get overflow in Java
-            //We can't fix the overflow right here, because it will drive dates unreadable
-            //So the trick is to convert bytes into chars, which will preserve the date and are compatible with ASCII 2 key names for fields
-            //And then convert it to either UTF-8 or UBytes when we find UTF-8 String values or dates.
-            for (int i = 0; i < bytes.length; i++) {
-                chars[i] = (char) bytes[i];
-//                if(bytes[i] < 0)
-//                {
-//                    chars[i] += 256;
-//                }
-            }
-            content = new String(chars);
+            // Since the string contains binary data for dates, it's impossible to read it as UTF-8, since
+            // it will destroy the dates as they will be treated as multibyte characters
+            // We can't read the string as single byte either, since bytes are not signed and get overflow in Java
+            // We can't fix the overflow right here, because it will drive dates unreadable
+            // So the trick is to convert bytes into chars, which will preserve the date and are compatible with ASCII 2 key names for fields
+            // And then convert it to either UTF-8 or UBytes when we find UTF-8 String values or dates.
+            // At the end, when we write files back we need to convert the string back to signed bytes using this helper
+            content = BinaryOperations.convertBytesToString(bytes);
         } catch (IOException e) {
             return null;
         }
@@ -128,43 +117,49 @@ public class VdfReader {
             result.put(name, res);
             return;
         }
-
-        //if more than 1 byte is used, then it's a binary date
-        //and here comes the problem, you can't read binary as normal chars, since they will be converted to some UTF-8 multibyte crappy chars
-        //so, we need to convert this part of a string back to original bytes
-        //but it's not enough, because bytes in Java are signed, so we need to create unsigned chars that will reflect exactly what is written in binary.
-        byte[] crappySignedBytes = new byte[]{(byte) a, (byte) b, (byte) c, (byte) d};
-        char[] unsignedGoodBytes = new char[crappySignedBytes.length];
-        for(int i = 0; i < crappySignedBytes.length; i++ )
-        {
-            unsignedGoodBytes[i] = (char) crappySignedBytes[i];
-            if(crappySignedBytes[i] < 0)
-            {
-                unsignedGoodBytes[i] += 256;
-            }
-        }
-        String dateStr = new String(unsignedGoodBytes);
+        BinaryOperations utils = new BinaryOperations();
+        String newString = new String(new char[]{a,b,c,d});
+        long value = utils.stringToLong( newString);
         JSONObject date = new JSONObject();
-        // experiments with bytes
-//        int x  = ((0xFF & crappySignedBytes[0]) << 24) | ((0xFF & crappySignedBytes[1]) << 16) |
-//                ((0xFF & crappySignedBytes[2]) << 8) | (0xFF & crappySignedBytes[3]);
-//        long y  = ((0xFF & unsignedGoodBytes[3]) << 24) | ((0xFF & unsignedGoodBytes[2]) << 16) |
-//                ((0xFF & unsignedGoodBytes[1]) << 8) | (0xFF & unsignedGoodBytes[0]);
-//        StringBuilder hexStrBuilder = new StringBuilder();
-//        for(int i = unsignedGoodBytes.length-1; i >= 0; i--){
-//            hexStrBuilder.append(String.format("%02X",crappySignedBytes[i]));
-//        }
-//
-//
-//        String hexValue = hexStrBuilder.toString();
-//        long number = Long.parseLong(hexValue,16);
-//        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
-//        buffer.putLong(number);
-//        byte[] bytes = buffer.array();
-
         date.put("type", "date");
-        date.put("value", dateStr);
+        date.put("value", value);
         result.put(name, date);
+//        //if more than 1 byte is used, then it's a binary date
+//        //and here comes the problem, you can't read binary as normal chars, since they will be converted to some UTF-8 multibyte crappy chars
+//        //so, we need to convert this part of a string back to original bytes
+//        //but it's not enough, because bytes in Java are signed, so we need to create unsigned chars that will reflect exactly what is written in binary.
+//        byte[] crappySignedBytes = new byte[]{(byte) a, (byte) b, (byte) c, (byte) d};
+//        char[] unsignedGoodBytes = new char[crappySignedBytes.length];
+//        for(int i = 0; i < crappySignedBytes.length; i++ )
+//        {
+//            unsignedGoodBytes[i] = (char) crappySignedBytes[i];
+//            if(crappySignedBytes[i] < 0)
+//            {
+//                unsignedGoodBytes[i] += 256;
+//            }
+//        }
+//        String dateStr = new String(unsignedGoodBytes);
+//        JSONObject date = new JSONObject();
+//        // experiments with bytes
+////        int x  = ((0xFF & crappySignedBytes[0]) << 24) | ((0xFF & crappySignedBytes[1]) << 16) |
+////                ((0xFF & crappySignedBytes[2]) << 8) | (0xFF & crappySignedBytes[3]);
+////        long y  = ((0xFF & unsignedGoodBytes[3]) << 24) | ((0xFF & unsignedGoodBytes[2]) << 16) |
+////                ((0xFF & unsignedGoodBytes[1]) << 8) | (0xFF & unsignedGoodBytes[0]);
+////        StringBuilder hexStrBuilder = new StringBuilder();
+////        for(int i = unsignedGoodBytes.length-1; i >= 0; i--){
+////            hexStrBuilder.append(String.format("%02X",crappySignedBytes[i]));
+////        }
+////
+////
+////        String hexValue = hexStrBuilder.toString();
+////        long number = Long.parseLong(hexValue,16);
+////        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+////        buffer.putLong(number);
+////        byte[] bytes = buffer.array();
+//
+//        date.put("type", "date");
+//        date.put("value", dateStr);
+//        result.put(name, date);
     }
 
     private String readUntilByte(String str, IndexRef ref, char search) {

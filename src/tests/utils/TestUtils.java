@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.function.Consumer;
 
 public class TestUtils {
@@ -30,7 +31,7 @@ public class TestUtils {
     }
 
     public static JSONObject createSettings() {
-        Path vdfPath = TestUtils.getTestDataPath("/test.vdf");
+        Path vdfPath = TestUtils.getTestDataPath("/steam_shortcuts.vdf");
         Path gamesPath = TestUtils.getTestDataPath("/games");
         JSONObject settings = new JSONObject();
         settings.put(Config.Keys.GAMES_DIRECTORY_PATH.getKey(),gamesPath.toString());
@@ -54,5 +55,17 @@ public class TestUtils {
         state.setVDFFilePath(newVdfFilePath);
 
         return state;
+    }
+
+    public static String getStringDiff(String str1, String str2) {
+        for(int i = 0; i < Math.min(str1.length(),str2.length()); i++){
+            char a = str1.charAt(i);
+            char b = str2.charAt(i);
+            if( a != b){
+                String diff = str1.substring(i);
+                return diff;
+            }
+        }
+        return "";
     }
 }

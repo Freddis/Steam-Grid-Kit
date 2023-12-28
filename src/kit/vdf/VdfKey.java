@@ -3,8 +3,8 @@ package kit.vdf;
 public enum VdfKey {
 
     APP_ID("appid"),
-    APP_NAME("appname"),
-    EXE_PATH("exe"),
+    APP_NAME("AppName"),
+    EXE_PATH("Exe"),
     START_DIR("StartDir"),
     ICON("icon"),
     SHORTCUT_PATH("ShortcutPath"),
@@ -12,10 +12,12 @@ public enum VdfKey {
     IS_HIDDEN("IsHidden"),
     ALLOW_DESKTOP_CONFIG("AllowDesktopConfig"),
     ALLOW_OVERLAY("AllowOverlay"),
-    OPEN_VR("openvr"),
+    OPEN_VR("OpenVR"),
     DEVKIT("Devkit"),
     DEVKIT_GAME_ID("DevkitGameID"),
+    DEVKIT_OVERRIDE_GAME_ID("DevkitOverrideAppID"),
     LAST_PLAY_TIME("LastPlayTime"),
+    FLATPAK_APP_ID("FlatpakAppID"),
     TAGS("tags");
 
     private final String key;

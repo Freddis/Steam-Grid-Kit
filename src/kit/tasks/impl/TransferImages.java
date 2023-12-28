@@ -45,11 +45,13 @@ public class TransferImages extends GameTask {
         }
         ArrayList<File> files = new ArrayList<>();
         files.add(game.getHeaderImageFile());
+        //artwork is the same as header
+        files.add(game.getHeaderImageFile());
         files.add(game.getCoverImageFile());
         files.add(game.getBackgroundImageFile());
         files.add(game.getLogoImageFile());
 
-        String[] imageTypes = {"header", "p", "_hero", "_logo"};
+        String[] imageTypes = {"header","", "p", "_hero", "_logo"};
         for (int i = 0; i < imageTypes.length; i++) {
             File currentFile = files.get(i);
             logger.log("image " + imageTypes[i]);

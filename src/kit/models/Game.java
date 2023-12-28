@@ -123,9 +123,8 @@ public class Game implements IJson {
         if(obj == null){
             return this.appId;
         }
-        String str = obj.getString("value");
-        BinaryOperations utils = new BinaryOperations();
-        return utils.stringToLong(str);
+        long val = obj.getLong("value");
+        return val;
     }
 
     public boolean isReadyToExport() {
@@ -325,14 +324,7 @@ public class Game implements IJson {
     }
 
     public String getAppIdAsString(ILogger logger) {
-        if(this.vdf != null){
-            JSONObject obj = this.vdf.optJSONObject(VdfKey.APP_ID.getKey());
-            if(obj != null){
-                String str = obj.getString("value");
-                return str;
-            }
-        }
-         BinaryOperations utils = new BinaryOperations();
+        BinaryOperations utils = new BinaryOperations();
          String result = utils.longToString(this.appId);
          return result;
     }

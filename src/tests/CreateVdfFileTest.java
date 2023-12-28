@@ -4,6 +4,8 @@ import kit.Config;
 import kit.State;
 import kit.models.Game;
 import kit.tasks.impl.CreateVdfFile;
+import kit.tasks.impl.ShortcutParser;
+import kit.utils.BinaryOperations;
 import kit.vdf.VdfKey;
 import kit.vdf.VdfReader;
 import org.apache.commons.io.FileUtils;
@@ -41,28 +43,27 @@ public class CreateVdfFileTest {
     @Test
     public void createsBackup() throws IOException {
         cleanup();
-        Path vdfPath = TestUtils.getTestDataPath("/test.vdf");
+        State state = TestUtils.createState();
         Path backupPath = Paths.get(TestUtils.getOutPath().toUri()).resolve("backups");
-        assertTrue(vdfPath.toFile().exists());
+        assertTrue(state.getVdfFilePath().toFile().exists());
         assertFalse(backupPath.toFile().exists());
 
-        State state = TestUtils.createState();
+
         CreateVdfFile task = new CreateVdfFile( new TestLogger(),state.getJson());
-
-        task.start(param -> {
-
-        });
+        task.start(TestUtils.getEmptyTaskCallback());
 
         assertTrue(backupPath.toFile().exists());
         assertEquals(backupPath.toFile().listFiles().length,1);
         assertThat(backupPath.toFile().listFiles()[0].getName(),containsString(".vdf"));
-        assertEquals(readFileToString(backupPath.toFile().listFiles()[0],StandardCharsets.UTF_8),FileUtils.readFileToString(vdfPath.toFile(), StandardCharsets.UTF_8),"Backup contents is wrong");
+        assertEquals(readFileToString(backupPath.toFile().listFiles()[0],StandardCharsets.UTF_8),
+                FileUtils.readFileToString(state.getVdfFilePath().toFile(), StandardCharsets.UTF_8),
+                "Backup contents is wrong");
     }
     @Test
     public void createsVdfFile() throws IOException {
         State state = TestUtils.createState();
         Game game = new Game("game1");
-        game.getExecs().add("\\game1\\folder1\\exe1.exe");
+        game.getExecs().add("E:\\Games\\game1\\folder1\\exe1.exe");
         ArrayList<Game> list = state.getGames();
         list.add(game);
         state.setGames(list);
@@ -77,7 +78,32 @@ public class CreateVdfFileTest {
         assertEquals(1,lines.length());
         JSONObject line1 = lines.getJSONObject(0);
         JSONObject appid = line1.optJSONObject(VdfKey.APP_ID.getKey());
-        assertEquals(game.getAppIdAsString(new TestLogger()),appid.optString("value"),"The appId is not the same");
-        assertEquals("E:\\Games\\game1\\folder1\\exe1.exe", line1.getString("exe"));
+        assertEquals(game.getAppId(),appid.optLong("value"),"The appId is not the same");
+        assertEquals("\"E:\\Games\\game1\\folder1\\exe1.exe\"", line1.getString(VdfKey.EXE_PATH.getKey()));
+    }
+
+    @Test
+    public void vdfFileCreatedByAppIdenticalToWhatSteamCreates() throws IOException{
+        State state = TestUtils.createState();
+        state.setGamesDirectory("E:\\Games");
+
+        assertEquals(0,state.getGames().size());
+        ShortcutParser task = new ShortcutParser(new TestLogger(),state.getJson());
+        task.start(TestUtils.getEmptyTaskCallback());
+        CreateVdfFile task2 = new CreateVdfFile(new TestLogger(),state.getJson());
+        task2.start(TestUtils.getEmptyTaskCallback());
+
+
+        assertEquals(3,state.getGames().size());
+        byte[] oldBytes = Files.readAllBytes(TestUtils.getTestDataPath("/steam_shortcuts.vdf"));
+        String oldContent = BinaryOperations.convertBytesToString(oldBytes);
+        byte[] newBytes = Files.readAllBytes(state.getVdfFilePath());
+        String newContent = BinaryOperations.convertBytesToString(newBytes);
+
+        // this check is redundant, but I want to keep the content variables in case the test fails
+        String diff = TestUtils.getStringDiff(oldContent,newContent);
+        assertEquals("",diff);
+        assertEquals(oldContent,newContent);
+        assertArrayEquals(oldBytes,newBytes);
     }
 }

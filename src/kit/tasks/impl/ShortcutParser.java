@@ -6,6 +6,7 @@ import kit.interfaces.ITask;
 import kit.models.Game;
 import kit.utils.JsonHelper;
 import kit.utils.Logger;
+import kit.vdf.VdfKey;
 import kit.vdf.VdfReader;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -65,7 +66,7 @@ public class ShortcutParser implements ITask {
 
         for (int i = 0; i < data.length(); i++) {
             JSONObject row = data.getJSONObject(i);
-            logger.log("Processing game: "+row.getString("exe"));
+            logger.log("Processing game: "+row.getString(VdfKey.EXE_PATH.getKey()));
             Game game =  this.createGame(row,gamePath);
             logger.log("Directory: "+game.getDirectory());
             Optional<Game> original = Arrays.stream(games.toArray(new Game[0])).filter(g -> g.isTheSame(game, settings)).findFirst();
@@ -90,11 +91,8 @@ public class ShortcutParser implements ITask {
     }
 
     protected Game createGame(JSONObject vdf, String gamesFolderPath) {
-        String separator = "\\\\";
-        if(!gamesFolderPath.isEmpty() && gamesFolderPath.charAt(gamesFolderPath.length()-1) != '\\') {
-            gamesFolderPath += '\\';
-        }
-        String exe = vdf.getString("exe");
+
+        String exe = vdf.getString(VdfKey.EXE_PATH.getKey());
         if(exe.charAt(0) == '"') {
             exe = exe.substring(1,exe.length()-1);
         }
@@ -103,15 +101,19 @@ public class ShortcutParser implements ITask {
             // exe should start with \, while directory shouldn't
             directoryPath = directoryPath.substring(1);
         }
-        boolean inGamesFolder = !gamesFolderPath.isEmpty() && exe.indexOf(gamesFolderPath) == 0;
+        boolean inGamesFolder = !gamesFolderPath.isEmpty() && exe.indexOf(gamesFolderPath+"\\") == 0;
         if(inGamesFolder) {
-            directoryPath = exe.replace(gamesFolderPath,"");
+            directoryPath = exe.replace(gamesFolderPath+"\\","");
         }
-        String[] parts = directoryPath.split(separator);
+        String separatorRegex = "\\\\";
+        String[] parts = directoryPath.split(separatorRegex);
         String directory = parts[0];
 
         Game game = new Game(directory);
-        game.setAltName(vdf.getString("appname"));
+        String name = vdf.getString(VdfKey.APP_NAME.getKey());
+        if(!name.equals(game.getDirectory())) {
+            game.setAltName(name);
+        }
         game.getExecs().add(exe);
         game.setSelectedExe(exe);
         game.setVdf(vdf);

@@ -1,5 +1,6 @@
 package kit.vdf;
 
+import kit.utils.BinaryOperations;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -14,7 +15,7 @@ public class VdfWriter {
     char x08 = 0x08;
     ArrayList<JSONObject> lines = new ArrayList<>();
 
-    public void addLine(String appId, String name, String exePath, String imagePath, JSONObject originalVdf) {
+    public void addLine(long appId, String name, String exePath, String imagePath, JSONObject originalVdf) {
         String[] parts = exePath.split("\\\\");
         String exeDir = String.join("\\", Arrays.copyOf(parts, parts.length - 1)) + "\\";
         String quotedExePath = '"' + exePath + '"';
@@ -27,16 +28,15 @@ public class VdfWriter {
 
         line.put(VdfKey.APP_ID.getKey(), appIdObj);
         line.put(VdfKey.APP_NAME.getKey(), name);
-        line.put(VdfKey.EXE_PATH.getKey(), exePath);
-        line.put(VdfKey.START_DIR.getKey(), "");
+        line.put(VdfKey.EXE_PATH.getKey(), quotedExePath);
         line.put(VdfKey.ICON.getKey(), imagePath);
-
         lines.add(line);
     }
 
     private JSONObject createVdfLine(JSONObject originalVdf) {
         JSONObject obj = new JSONObject();
         obj.put(VdfKey.SHORTCUT_PATH.getKey(), "");
+        obj.put(VdfKey.START_DIR.getKey(), "");
         obj.put(VdfKey.LAUNCH_OPTIONS.getKey(), "");
         obj.put(VdfKey.IS_HIDDEN.getKey(), false);
         obj.put(VdfKey.ALLOW_DESKTOP_CONFIG.getKey(), true);
@@ -44,8 +44,11 @@ public class VdfWriter {
         obj.put(VdfKey.OPEN_VR.getKey(), false);
         obj.put(VdfKey.DEVKIT.getKey(), false);
         obj.put(VdfKey.DEVKIT_GAME_ID.getKey(), "");
+        obj.put(VdfKey.DEVKIT_OVERRIDE_GAME_ID.getKey(), "");
         obj.put(VdfKey.LAST_PLAY_TIME.getKey(), false);
+        obj.put(VdfKey.FLATPAK_APP_ID.getKey(), "");
         obj.put(VdfKey.TAGS.getKey(), new JSONArray());
+        obj.put(VdfKey.ICON.getKey(),"");
 
         if (originalVdf == null) {
             return obj;
@@ -82,6 +85,7 @@ public class VdfWriter {
         String start = x00 + String.valueOf(id) + x00;
         sb.append(start);
         VdfKey[] orderedKeys = VdfKey.values();
+        BinaryOperations utils = new BinaryOperations();
         for (VdfKey key : orderedKeys) {
             Object val = line.get(key.getKey());
             String strVal;
@@ -94,7 +98,8 @@ public class VdfWriter {
                 strVal = "" + ((boolean) val ? x01 : x00) + x00 + x00 + x00;
             } else if (val instanceof JSONObject && ((JSONObject) val).optString("type").equals("date")) {
                 type = 0x02;
-                strVal = ((JSONObject) val).getString("value");
+                long longVal = ((JSONObject) val).getLong("value");
+                strVal = utils.longToString(longVal);
             } else if (val instanceof JSONArray) {
                 type = 0x00;
                 strVal = convertListToString((JSONArray) val);

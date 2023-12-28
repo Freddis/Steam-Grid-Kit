@@ -10,6 +10,7 @@ import tests.utils.TestLogger;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 
 public class State {
 
@@ -30,7 +31,7 @@ public class State {
         return this.state;
     }
 
-    public void setGames(ArrayList<Game> list) {
+    public void setGames(List<Game> list) {
         JsonHelper helper = new JsonHelper(new TestLogger());
         Game[] games = list.toArray(new Game[0]);
         JSONArray newGames = this.helper.toJsonArray(games);
@@ -50,5 +51,11 @@ public class State {
 
     public void setGamesDirectory(String string) {
         this.state.put(Config.Keys.GAMES_DIRECTORY_PATH.getKey(), string);
+    }
+
+    public Path getGamesDirectoryPath() {
+        String result = this.state.getString(Config.Keys.GAMES_DIRECTORY_PATH.getKey());
+        File file = new File(result);
+        return file.toPath();
     }
 }

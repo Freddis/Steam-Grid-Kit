@@ -1,6 +1,7 @@
 package kit.tasks.impl;
 
 import kit.Config;
+import kit.interfaces.ILogger;
 import kit.models.Game;
 import kit.tasks.GameTask;
 import kit.utils.Logger;
@@ -14,7 +15,7 @@ public class ExeFinder extends GameTask {
 
     private final File folder;
 
-    public ExeFinder(Logger logger, JSONObject settings) {
+    public ExeFinder(ILogger logger, JSONObject settings) {
         super(logger, settings);
         folder = new File(settings.optString(Config.Keys.GAMES_DIRECTORY_PATH.getKey()));
     }
@@ -53,21 +54,22 @@ public class ExeFinder extends GameTask {
 
         String localPath = settings.optString(Config.Keys.LOCAL_GAMES_DIRECTORY_PATH.getKey());
         ArrayList<String> execPaths = new ArrayList<>();
-
-        if (localPath != null) {
-            execPaths.addAll(convertPathsToLocal(execs, localPath, folder.getAbsolutePath()));
-        } else {
-            for (File exec : execs) {
-                execPaths.add(exec.getAbsolutePath());
-            }
+        for (File exec : execs) {
+            logger.log(exec.getAbsolutePath());
+            execPaths.add(exec.getAbsolutePath());
         }
 
         String currentExe = !game.getExecs().isEmpty() ? game.getSelectedExe() : null;
         game.getExecs().clear();
         game.getExecs().addAll(execPaths);
         if (currentExe != null) {
+            logger.log("Trying to set current exe:");
+            logger.log(currentExe);
             Optional<String> prevExe = Arrays.stream(game.getExecs().toArray(new String[0])).filter(path -> path.equals(currentExe)).findFirst();
-            prevExe.ifPresent(game::setSelectedExe);
+            if(prevExe.isPresent()){
+                logger.log("Exe has been set");
+                prevExe.ifPresent(game::setSelectedExe);
+            }
         }
         return true;
     }
