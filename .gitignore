@@ -1,6 +1,6 @@
 out
 .DS_Store
-
+test-data/output
 # IDEA User-specific stuff:
 .idea/workspace.xml
 .idea/tasks.xml

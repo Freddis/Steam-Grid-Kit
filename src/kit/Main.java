@@ -3,8 +3,10 @@ package kit;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
+import java.io.InputStream;
 import java.net.URL;
 
 public class Main extends Application {
@@ -21,6 +23,7 @@ public class Main extends Application {
         //Don't want to use primary stage, since it cannot be controlled with FXML and I want all styles to be in FXML
         URL res = getClass().getResource("/views/main/main.fxml");
         Stage stage = FXMLLoader.load(res);
+        stage.getIcons().add(new Image("/views/assets/steam.ico"));
         stage.show();
         stage.setTitle(stage.getTitle()+" v"+Config.getVersion());
         stage.setOnCloseRequest(event -> {
