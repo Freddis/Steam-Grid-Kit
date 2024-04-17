@@ -1,6 +1,7 @@
 package kit.tasks.impl;
 
 import kit.Config;
+import kit.State;
 import kit.models.Game;
 import kit.tasks.GameTask;
 import kit.utils.Logger;
@@ -22,7 +23,7 @@ public class TransferImages extends GameTask {
 
 
     @Override
-    public void start(Consumer<Double> tickCallback) {
+    public void start(State state, Consumer<Double> tickCallback) {
         String filePath = settings.optString(Config.Keys.VDF_FILE.getKey(), null);
         File existingVdfFile = new File(filePath);
         File imageDir = new File(existingVdfFile.getParent(), "grid");
@@ -32,7 +33,7 @@ public class TransferImages extends GameTask {
             return;
         }
         this.steamImageDir = imageDir;
-        super.start(tickCallback);
+        super.start(state,tickCallback);
     }
 
     @Override

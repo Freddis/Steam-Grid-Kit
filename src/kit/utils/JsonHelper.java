@@ -83,4 +83,11 @@ public class JsonHelper {
         }
         return result;
     }
+    public JSONArray toJsonArray(String[] arr) {
+        JSONArray result = new JSONArray();
+        for (String obj : arr) {
+            result.put(obj);
+        }
+        return result;
+    }
 }

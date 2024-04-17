@@ -1,5 +1,6 @@
 package kit.tasks;
 
+import kit.State;
 import kit.interfaces.ILogger;
 import kit.interfaces.ITask;
 
@@ -18,7 +19,7 @@ public abstract class ListTask<T> implements ITask {
         };
     }
 
-    public void start(Consumer<Double> tickCallback) {
+    public void start(State state, Consumer<Double> tickCallback) {
          thread = new Thread(() -> {
             List<T> list = this.getList();
             for (int i = 0; i < list.size(); i++) {

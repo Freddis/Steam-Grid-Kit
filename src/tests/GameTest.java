@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class GameTest {
     @Test
     void gameJsonSpecialSymbolsReversible(){
-        Game nier = new Game("Nier Automata");
+        Game nier = new Game("Nier Automata","test");
         JSONObject nierJson = new JSONObject();
         nierJson.put("name","NieR:Automata™");
         nierJson.put("appid",524220);

@@ -1,6 +1,7 @@
 package kit.tasks;
 
 import kit.Config;
+import kit.State;
 import kit.interfaces.ILogger;
 import kit.models.Game;
 import kit.utils.JsonHelper;
@@ -50,7 +51,7 @@ public abstract class GameTask extends ListTask<Game> {
     }
 
     @Override
-    public void start(Consumer<Double> tickCallback) {
+    public void start(State state, Consumer<Double> tickCallback) {
         //before start
         games = this.helper.toList(Game::new, this.settings.optJSONArray(Config.Keys.GAMES.getKey()));
         if(this.game != null)
@@ -60,7 +61,7 @@ public abstract class GameTask extends ListTask<Game> {
             games.remove(i);
             games.add(i,game);
         }
-        super.start(tickCallback);
+        super.start(state,tickCallback);
     }
 
     public void setUseCache(boolean useCache) {

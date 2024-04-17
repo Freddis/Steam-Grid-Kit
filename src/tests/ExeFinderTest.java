@@ -19,13 +19,13 @@ public class ExeFinderTest {
         State state = TestUtils.createState();
         TestLogger logger = new TestLogger();
         JSONObject vdf = new JSONObject();
-        Game original = new Game("game1");
+        Game original = new Game("game1",state.getPrimaryGamesDirectoryPath());
         state.setGames(Collections.singletonList(original));
         ExeFinder task = new ExeFinder(new TestLogger(),state.getJson());
 
         // this one is threaded
         CountDownLatch latch = new CountDownLatch(1);
-        task.start(result -> {
+        task.start(state,result -> {
               latch.countDown();
         });
         latch.await();
@@ -42,6 +42,5 @@ public class ExeFinderTest {
                     .getSelectedExe()
                     .replace('/','\\')
         );
-
     }
 }

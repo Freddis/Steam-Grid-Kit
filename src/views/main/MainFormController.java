@@ -16,7 +16,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import kit.Config;
-import kit.interfaces.ILogger;
+import kit.State;
 import kit.interfaces.ITask;
 import kit.models.Game;
 import kit.tasks.GameTask;
@@ -75,6 +75,7 @@ public class MainFormController {
 
     private final ArrayList<Game> games = new ArrayList<>();
     private JSONObject settings;
+    private State state;
     private Logger logger;
     private JsonHelper jsonHelper;
     private Progress progress;
@@ -98,6 +99,7 @@ public class MainFormController {
         }, buttonStart, this::start, this::stop);
         logger.log("App started");
         settings = jsonHelper.readJsonFromFile(Config.getPropsJsonFilePath());
+        this.state = new State(settings,logger);
         this.initControls(settings);
     }
 
@@ -352,7 +354,7 @@ public class MainFormController {
     }
 
     public void selectGamesDirectory() {
-        System.out.println("Setting games directory");
+        logger.log("Setting games directory");
         DirectoryChooser fileChooser = new DirectoryChooser();
         fileChooser.setTitle("Open Resource File");
         File file = fileChooser.showDialog(this.container.getScene().getWindow());
@@ -421,7 +423,7 @@ public class MainFormController {
                 runningTasks = null;
             }
         });
-        task.start(param -> {
+        task.start(state,param -> {
             progress.setTaskProgress(param);
             if (updateTables) {
                 Platform.runLater(() -> {

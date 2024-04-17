@@ -50,7 +50,7 @@ public class CreateVdfFileTest {
 
 
         CreateVdfFile task = new CreateVdfFile( new TestLogger(),state.getJson());
-        task.start(TestUtils.getEmptyTaskCallback());
+        task.start(state,TestUtils.getEmptyTaskCallback());
 
         assertTrue(backupPath.toFile().exists());
         assertEquals(backupPath.toFile().listFiles().length,1);
@@ -62,7 +62,7 @@ public class CreateVdfFileTest {
     @Test
     public void createsVdfFile() throws IOException {
         State state = TestUtils.createState();
-        Game game = new Game("game1");
+        Game game = new Game("game1",state.getPrimaryGamesDirectoryPath());
         game.getExecs().add("E:\\Games\\game1\\folder1\\exe1.exe");
         ArrayList<Game> list = state.getGames();
         list.add(game);
@@ -70,7 +70,7 @@ public class CreateVdfFileTest {
         state.setGamesDirectory("E:\\Games");
 
         CreateVdfFile task = new CreateVdfFile( new TestLogger(),state.getJson());
-        task.start(TestUtils.getEmptyTaskCallback());
+        task.start(state,TestUtils.getEmptyTaskCallback());
 
         VdfReader reader = new VdfReader();
         File vdf = new File(state.getVdfFilePath().toString());
@@ -89,9 +89,9 @@ public class CreateVdfFileTest {
 
         assertEquals(0,state.getGames().size());
         ShortcutParser task = new ShortcutParser(new TestLogger(),state.getJson());
-        task.start(TestUtils.getEmptyTaskCallback());
+        task.start(state,TestUtils.getEmptyTaskCallback());
         CreateVdfFile task2 = new CreateVdfFile(new TestLogger(),state.getJson());
-        task2.start(TestUtils.getEmptyTaskCallback());
+        task2.start(state,TestUtils.getEmptyTaskCallback());
 
 
         assertEquals(3,state.getGames().size());

@@ -7,13 +7,15 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import kit.Config;
+import kit.State;
 import kit.griddb.SteamGridDbClient;
 import kit.utils.JsonHelper;
 import kit.utils.Logger;
-import kit.utils.UrlOpener;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -30,6 +32,7 @@ public class OptionsController {
     public TextField textFieldLocalGamesPath;
     public TextField textFieldLocalShortcutsPath;
     public TextField textFieldSteamGridDbApiKey;
+    public VBox additionalGamesFolderList;
     public Button buttonSave;
     public Button buttonClear;
     public Label labelLocalGamesPath;
@@ -39,10 +42,12 @@ public class OptionsController {
     private JsonHelper jsonHelper;
     private Logger logger;
     private Runnable onSave;
+    private State state;
 
 
     public void initializeSettings(Logger logger, JSONObject settings, Runnable onSave) {
         this.settings = settings;
+        this.state = new State(settings,logger);
         this.logger = logger;
         this.jsonHelper = new JsonHelper(logger);
         loadCommaSeparatedValues(settings, Config.Keys.IGNORED_FOLDERS_NAMES.getKey(), textAreaIgnoredFolderNames);
@@ -58,6 +63,50 @@ public class OptionsController {
             parent.getChildren().remove(labelLocalGamesPath);
         }
         this.onSave = onSave;
+        this.updateAdditionalGamesList();
+    }
+
+    public void addAdditionalGameFolder(MouseEvent mouseEvent) {
+        logger.log("Setting games directory");
+        DirectoryChooser fileChooser = new DirectoryChooser();
+        fileChooser.setTitle("Open Resource File");
+        File file = fileChooser.showDialog(additionalGamesFolderList.getScene().getWindow());
+        if (file == null) {
+            logger.log("Cancelled");
+            return;
+        }
+        logger.log("Dir: " + file.getAbsolutePath());
+        String path = file.getAbsolutePath();
+        this.state.addAdditionalGamesDirectory(path);
+        this.updateAdditionalGamesList();
+    }
+    protected void updateAdditionalGamesList(){
+        String[] paths = this.state.getAdditionalGamesDirectoryPaths();
+        additionalGamesFolderList.setSpacing(10);
+        additionalGamesFolderList.getChildren().clear();
+        int i =0;
+        for (String path : paths) {
+            HBox hbox = this.createAdditionalGameFxml(path,i++);
+            additionalGamesFolderList.getChildren().add(hbox);
+        }
+    }
+    protected HBox createAdditionalGameFxml(String gamePath, int index) {
+        HBox hbox = new HBox();
+        Label label = new Label();
+        label.setText(gamePath);
+        Button button = new Button();
+        button.setText("Delete");
+        button.setOnMouseClicked(event -> this.removeAdditionalGamesPath(index));
+        hbox.getChildren().add(label);
+        hbox.getChildren().add(button);
+        hbox.setSpacing(10);
+        return hbox;
+    }
+
+    private void removeAdditionalGamesPath(int index) {
+        this.logger.log("Removing additional directory "+index);
+        this.state.removeAdditionalGamesDirectory(index);
+        this.updateAdditionalGamesList();
     }
 
     public void saveOptions(MouseEvent mouseEvent) {

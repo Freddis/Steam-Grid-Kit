@@ -1,6 +1,7 @@
 package kit.tasks.impl;
 
 import kit.Config;
+import kit.State;
 import kit.interfaces.ILogger;
 import kit.interfaces.ITask;
 import kit.models.Game;
@@ -45,7 +46,7 @@ public class ShortcutParser implements ITask {
     }
 
     @Override
-    public void start(Consumer<Double> tickCallback) {
+    public void start(State state, Consumer<Double> tickCallback) {
         File file = this.copyVdfFile();
         if (file == null) {
             finishCallback.accept(false);
@@ -109,7 +110,7 @@ public class ShortcutParser implements ITask {
         String[] parts = directoryPath.split(separatorRegex);
         String directory = parts[0];
 
-        Game game = new Game(directory);
+        Game game = new Game(directory,gamesFolderPath);
         String name = vdf.getString(VdfKey.APP_NAME.getKey());
         if(!name.equals(game.getDirectory())) {
             game.setAltName(name);

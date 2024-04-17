@@ -68,6 +68,7 @@ public class Config {
 
     public enum Keys {
         GAMES_DIRECTORY_PATH("gamesDirectory"),
+        ADDITIONAL_GAMES_DIRECTORY_PATHS("additionalGamesDirectoryPaths"),
         GAMES("games"),
         USE_CACHE("useCache"),
         IGNORED_FOLDERS_NAMES("ignoredDirectoryNames"),

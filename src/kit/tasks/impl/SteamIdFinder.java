@@ -2,6 +2,7 @@ package kit.tasks.impl;
 
 import javafx.util.Pair;
 import kit.Config;
+import kit.State;
 import kit.interfaces.ILogger;
 import kit.models.Game;
 import kit.models.SteamGame;
@@ -27,7 +28,7 @@ public class SteamIdFinder extends GameTask {
     }
 
     @Override
-    public void start(Consumer<Double> tickCallback) {
+    public void start(State state, Consumer<Double> tickCallback) {
         JSONObject json = helper.readJsonFromFile(Config.getSteamLibraryJsonFilePath());
         if(json.isEmpty())
         {
@@ -48,7 +49,7 @@ public class SteamIdFinder extends GameTask {
             finishCallback.accept(false);
             return;
         }
-        super.start(tickCallback);
+        super.start(state,tickCallback);
     }
 
     @Override

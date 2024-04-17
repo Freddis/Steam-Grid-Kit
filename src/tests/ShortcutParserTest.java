@@ -23,8 +23,8 @@ public class ShortcutParserTest {
         State state = TestUtils.createState();
         TestLogger logger = new TestLogger();
         JSONObject vdf = new JSONObject();
-        Game original = new Game("Bioshock");
-        Game anotherGame = new Game("Assasins creed");
+        Game original = new Game("Bioshock",state.getPrimaryGamesDirectoryPath());
+        Game anotherGame = new Game("Assasins creed",state.getPrimaryGamesDirectoryPath());
         vdf.put(VdfKey.EXE_PATH.getKey(), "\"\\Bioshock\\bioshock.exe\"");
         vdf.put(VdfKey.APP_NAME.getKey(), "Bioshock");
 
@@ -43,7 +43,7 @@ public class ShortcutParserTest {
         state.setGamesDirectory("E:\\Games");
         ShortcutParser task = new ShortcutParser(new TestLogger(),state.getJson());
 
-        task.start((param)->{});
+        task.start(state,(param)->{});
 
         JsonHelper helper = new JsonHelper(new TestLogger());
         ArrayList<Game> games = state.getGames();

@@ -1,6 +1,7 @@
 package kit.tasks.impl;
 
 import kit.Config;
+import kit.State;
 import kit.interfaces.ILogger;
 import kit.interfaces.ITask;
 import kit.models.Game;
@@ -43,7 +44,7 @@ public class CreateVdfFile implements ITask {
     }
 
     @Override
-    public void start(Consumer<Double> tickCallback) {
+    public void start(State state, Consumer<Double> tickCallback) {
         try {
             logger.log("Creating new vdf file");
             if (!this.backUpExistingVdf()) {

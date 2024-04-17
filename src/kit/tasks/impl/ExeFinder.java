@@ -13,22 +13,18 @@ import java.util.*;
 
 public class ExeFinder extends GameTask {
 
-    private final File folder;
-
     public ExeFinder(ILogger logger, JSONObject settings) {
         super(logger, settings);
-        folder = new File(settings.optString(Config.Keys.GAMES_DIRECTORY_PATH.getKey()));
     }
 
     @Override
     protected boolean processGame(Game game) {
-
         if (game.getExecs().size() > 0 && this.useCache) {
             logger.log("Using cached data for " + game.getDirectory());
             return true;
         }
 
-        File gameDir = new File(folder, game.getDirectory());
+        File gameDir = new File(game.getParentDirectory(), game.getDirectory());
         if (!gameDir.canRead()) {
             logger.log("Can't read directory: " + gameDir.getAbsolutePath());
             return true;
@@ -52,7 +48,6 @@ public class ExeFinder extends GameTask {
             return aResult > bResult ? -1 : 1;
         });
 
-        String localPath = settings.optString(Config.Keys.LOCAL_GAMES_DIRECTORY_PATH.getKey());
         ArrayList<String> execPaths = new ArrayList<>();
         for (File exec : execs) {
             logger.log(exec.getAbsolutePath());

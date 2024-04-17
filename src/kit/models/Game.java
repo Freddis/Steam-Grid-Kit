@@ -1,31 +1,31 @@
 package kit.models;
 
 import kit.Config;
+import kit.State;
 import kit.interfaces.IJson;
 import kit.interfaces.ILogger;
 import kit.utils.BinaryOperations;
-import kit.utils.Logger;
 import kit.vdf.VdfKey;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Random;
-import java.util.zip.CRC32;
-import java.util.zip.Checksum;
 
 public class Game implements IJson {
     /**
      * Name of the game directory, serves as the game ID in the app
      */
-    private final String directory;
+    private String directory;
+
+    /**
+     * Path to the parent directory where the game is located
+     */
+    private String parentDirectory;
     /**
      * Relative path to executable from the games directory. Starts with "\"
      */
-    private final ArrayList<String> execs = new ArrayList<>();
+    private ArrayList<String> execs = new ArrayList<>();
     /**
      * Name that is going to be used for the shortcut if the user doesn't like directory name
      */
@@ -34,7 +34,7 @@ public class Game implements IJson {
     /**
      * List of Steam games that fit the name of the game.
      */
-    private final ArrayList<SteamGame> foundSteamGames = new ArrayList<>();
+    private ArrayList<SteamGame> foundSteamGames = new ArrayList<>();
     /**
      * Index of the selected exe file
      */
@@ -56,12 +56,13 @@ public class Game implements IJson {
     private JSONObject vdf;
 
     public Game(JSONObject obj) {
-        this(obj.getString("directory"));
+        this(obj.getString("directory"),obj.getString("parentDirectory"));
         this.init(obj);
     }
 
-    public Game(String directory) {
+    public Game(String directory, String gamesDirectory) {
         this.directory = directory;
+        this.parentDirectory = gamesDirectory;
         this.appId = this.generateAppId();
     }
 
@@ -72,6 +73,9 @@ public class Game implements IJson {
     public String getDirectory() {
         return directory;
     }
+    public String getParentDirectory() {
+        return this.parentDirectory;
+    }
 
     public ArrayList<String> getExecs() {
         return this.execs;
@@ -79,6 +83,7 @@ public class Game implements IJson {
 
     public JSONObject toJson() {
         JSONObject obj = new JSONObject();
+        obj.put("parentDirectory", parentDirectory);
         obj.put("directory", directory);
         obj.put("appId", appId);
         obj.put("altName", altName);
@@ -226,6 +231,9 @@ public class Game implements IJson {
         altName = name;
     }
 
+    public boolean isTheSame(Game game, State settings) {
+        return this.isTheSame(game,settings.getJson());
+    }
     public boolean isTheSame(Game game, JSONObject settings) {
         if(this.appId == game.appId && this.appId != 0){
             return true;

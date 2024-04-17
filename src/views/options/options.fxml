@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.stage.*?>
 
-<Stage maxHeight="400.0" maxWidth="540.0" minHeight="400.0" minWidth="540.0" title="Settings" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="views.options.OptionsController">
+<Stage maxHeight="600.0" maxWidth="540.0" minHeight="600.0" minWidth="540.0" title="Settings" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="views.options.OptionsController">
     <scene>
         <Scene>
             <AnchorPane prefHeight="400.0" prefWidth="540.0">
@@ -18,7 +18,7 @@
                   <VBox.margin>
                      <Insets top="10.0" />
                   </VBox.margin></Label>
-                    <TextArea fx:id="textAreaIgnoredFolderNames" prefHeight="100.0" prefWidth="200.0">
+                    <TextArea fx:id="textAreaIgnoredFolderNames" minHeight="100.0" prefHeight="100.0" prefWidth="200.0">
                         <VBox.margin>
                             <Insets top="5.0" />
                         </VBox.margin>
@@ -35,7 +35,7 @@
                   </VBox.margin>
                </Label>
                <TextField fx:id="textFieldLocalShortcutsPath" />
-               <AnchorPane prefHeight="35.0">
+               <AnchorPane minHeight="35.0">
                   <children>
                      <Label text="SteamGridDb Api Key" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="5.0" />
                      <Hyperlink onMouseClicked="#gotoSteamGridDbWebsite" text="How to get?" AnchorPane.leftAnchor="280.0" AnchorPane.topAnchor="0.0" />
@@ -46,6 +46,32 @@
                   </VBox.margin>
                </AnchorPane>
                <TextField fx:id="textFieldSteamGridDbApiKey" />
+
+                    <AnchorPane prefHeight="35.0">
+                        <VBox.margin>
+                            <Insets top="10.0"/>
+                        </VBox.margin>
+                        <Label text="Additional games folders:" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="5.0"/>
+                        <Button mnemonicParsing="false" onMouseClicked="#addAdditionalGameFolder" text="Add"
+                                AnchorPane.leftAnchor="150.0"/>
+                    </AnchorPane>
+                    <VBox fx:id="additionalGamesFolderList">
+                        <VBox.margin>
+                            <Insets top="10" bottom="10"/>
+                        </VBox.margin>
+                        <HBox>
+                            <VBox.margin>
+                                <Insets top="10" bottom="10"/>
+                            </VBox.margin>
+                            <Label text="E:\Games" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="5.0"/>
+                            <Button mnemonicParsing="false" onMouseClicked="#gotoSteamGridDbWebsite" text="Remove"
+                                    AnchorPane.leftAnchor="150.0">
+                                <HBox.margin>
+                                    <Insets left="10"/>
+                                </HBox.margin>
+                            </Button>
+                        </HBox>
+                    </VBox>
                 </VBox>
                 <Button fx:id="buttonSave" mnemonicParsing="false" onMouseClicked="#saveOptions" text="Save" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
             <Button fx:id="buttonClear" mnemonicParsing="false" onMouseClicked="#clearGames" text="Clear Cached Games" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />

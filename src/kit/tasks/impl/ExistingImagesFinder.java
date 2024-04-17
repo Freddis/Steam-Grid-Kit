@@ -1,6 +1,7 @@
 package kit.tasks.impl;
 
 import kit.Config;
+import kit.State;
 import kit.models.Game;
 import kit.tasks.GameTask;
 import kit.utils.Logger;
@@ -21,7 +22,7 @@ public class ExistingImagesFinder extends GameTask {
     }
 
     @Override
-    public void start(Consumer<Double> tickCallback) {
+    public void start(State state, Consumer<Double> tickCallback) {
         File file = new File(Config.getImageDirectory());
         if(!file.exists() && !file.mkdir())
         {
@@ -41,7 +42,7 @@ public class ExistingImagesFinder extends GameTask {
         }
         imageFiles = imageDir.listFiles();
 
-        super.start(tickCallback);
+        super.start(state, tickCallback);
     }
 
     @Override

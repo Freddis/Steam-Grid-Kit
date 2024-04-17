@@ -1,5 +1,7 @@
 package kit.interfaces;
 
+import kit.State;
+
 import java.util.function.Consumer;
 
 public interface ITask {
@@ -7,7 +9,7 @@ public interface ITask {
 
     void onFinish(Consumer<Boolean> finishCallback);
 
-    void start(Consumer<Double> tickCallback);
+    void start(State state, Consumer<Double> tickCallback);
 
     void kill();
 }
