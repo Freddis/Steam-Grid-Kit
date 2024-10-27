@@ -181,4 +181,26 @@ public class GameController {
         stage.initOwner(buttonShowExistingData.getScene().getWindow());
         stage.show();
     }
+
+    public void searchSteam(MouseEvent mouseEvent) {
+        logger.log("Showing steam search");
+        Stage stage;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/game/steam-search.fxml"));
+            stage = loader.load();
+            SteamSearchController ctrl = loader.getController();
+            ctrl.initialize(settings,game,logger);
+        } catch (Exception e) {
+            logger.error("Couldn't create new window",e);
+            return;
+        }
+        stage.setTitle("Steam Search");
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.initOwner(buttonShowExistingData.getScene().getWindow());
+        stage.setOnHiding(event -> {
+            this.logger.log("Saving");
+            this.initialize(this.logger,this.settings,this.game,this.onSave);
+        });
+        stage.show();
+    }
 }

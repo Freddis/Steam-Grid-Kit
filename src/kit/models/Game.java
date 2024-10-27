@@ -54,6 +54,7 @@ public class Game implements IJson {
      * Original content of VDF line from Steam. Filled when the game already exists in Steam.
      */
     private JSONObject vdf;
+    private long altSteamid;
 
     public Game(JSONObject obj) {
         this(obj.getString("directory"),obj.getString("parentDirectory"));
@@ -87,6 +88,7 @@ public class Game implements IJson {
         obj.put("directory", directory);
         obj.put("appId", appId);
         obj.put("altName", altName);
+        obj.put("altSteamId",altSteamid);
         obj.put("selectedExeIndex", selectedExeIndex);
         obj.put("selectedSteamGameIndex", selectedSteamGameIndex);
         obj.put("execs", new JSONArray(execs));
@@ -101,6 +103,7 @@ public class Game implements IJson {
     public boolean init(JSONObject obj) {
         selectedExeIndex = obj.optInt("selectedExeIndex", 0);
         altName = obj.optString("altName", null);
+        altSteamid = obj.optLong("altSteamId",0);
         selectedSteamGameIndex = obj.optInt("selectedSteamGameIndex", 0);
         vdf = obj.optJSONObject("vdf");
         if(vdf != null){
@@ -341,5 +344,13 @@ public class Game implements IJson {
 
     public long getAppId() {
         return this.appId;
+    }
+
+    public long getAltSteamId() {
+        // used only in search
+        return this.altSteamid;
+    }
+    public void setAltSteamId(long id) {
+        this.altSteamid = id;
     }
 }

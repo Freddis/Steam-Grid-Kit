@@ -1,5 +1,5 @@
 <component name="ArtifactManager">
-  <artifact type="javafx" name="StreamGridKit">
+  <artifact type="javafx" build-on-make="true" name="StreamGridKit">
     <output-path>$USER_HOME$/Downloads/SteamGridKit</output-path>
     <properties id="javafx-properties">
       <options>

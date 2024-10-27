@@ -19,11 +19,17 @@
                     <TextField fx:id="textFieldDirectoryName" disable="true" editable="false" />
                     <Label text="Alt Name (used if  folder name is bad)" />
                     <TextField fx:id="textFieldAltName" />
-                    <Label text="Steam Game">
+                    <HBox>
                         <VBox.margin>
                             <Insets top="5.0" />
                         </VBox.margin>
-                    </Label>
+                    <Label text="Steam Game"/>
+                        <Button onMouseClicked="#searchSteam" text="Search">
+                            <HBox.margin>
+                            <Insets left="10.0" top="-5" />
+                            </HBox.margin>
+                        </Button>
+                    </HBox>
                     <HBox prefWidth="200.0">
                         <ChoiceBox fx:id="choiceBoxGame" prefHeight="28.0" prefWidth="387.0" />
                         <Hyperlink fx:id="hyperlinkShowGame" text="Steam Page">

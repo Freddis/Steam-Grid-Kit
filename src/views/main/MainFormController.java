@@ -347,6 +347,9 @@ public class MainFormController {
             logger.log("Couldn't create new window");
             return;
         }
+        stage.setOnHiding(event -> {
+            Platform.runLater(this::initGames);
+        });
         stage.setTitle("Edit" + game.getDirectory());
         stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(container.getScene().getWindow());

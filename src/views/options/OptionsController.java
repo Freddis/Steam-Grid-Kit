@@ -1,6 +1,7 @@
 package views.options;
 
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -95,7 +96,8 @@ public class OptionsController {
         Label label = new Label();
         label.setText(gamePath);
         Button button = new Button();
-        button.setText("Delete");
+        button.setText("Remove");
+        HBox.setMargin(button,new Insets(-5,0,0,0));
         button.setOnMouseClicked(event -> this.removeAdditionalGamesPath(index));
         hbox.getChildren().add(label);
         hbox.getChildren().add(button);
