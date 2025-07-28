@@ -10,6 +10,10 @@ Steam Grid Kit is an app that helps you to manage your Steam shortcuts. It has 3
 3. Loading images from Steam and SteamGridDb for problematic games. (Like games that aren't present on Steam or emulated games for old consoles)
 
 
+Bugs and Isues
+--------------------------------------
+I'm not actively developing Steam Grid Kit right now, but I'm still here. If you actually like it and experiencing any bugs, feel free to create an issue here on [github.com](https://github.com/Freddis/Steam-Grid-Kit/issues/new). I'm always around and happy to make your experience better.
+
 Backing up your shortcuts
 --------------------------------------
 

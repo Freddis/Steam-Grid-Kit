@@ -110,6 +110,9 @@ public class CreateVdfFile implements ITask {
                 imagePath = "";
             }
             String fullGameExePath = game.getSelectedExe();
+            if(fullGameExePath == null) {
+                throw new Exception("Game"+ game.getDirectory() + " has wrong selected exe file");
+            }
             writer.addLine(game.getAppId(),game.getIntendedTitle(), fullGameExePath, imagePath, game.getVdf());
 
         }

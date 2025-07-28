@@ -29,6 +29,7 @@ public class VdfWriter {
         line.put(VdfKey.APP_ID.getKey(), appIdObj);
         line.put(VdfKey.APP_NAME.getKey(), name);
         line.put(VdfKey.EXE_PATH.getKey(), quotedExePath);
+        line.put(VdfKey.START_DIR.getKey(), exeDir);
         line.put(VdfKey.ICON.getKey(), imagePath);
         lines.add(line);
     }
