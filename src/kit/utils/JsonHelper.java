@@ -37,6 +37,24 @@ public class JsonHelper {
         return root;
     }
 
+    public JSONArray readJsonArray(String path) {
+        this.logger.log("Loading data from file " + path);
+        File json = new File(path);
+        JSONArray root;
+        String content;
+        try {
+            content = new String(Files.readAllBytes(Paths.get(json.toURI())));
+            this.logger.log("Bytes loaded");
+            root = new JSONArray(content);
+            this.logger.log("Content loaded");
+        } catch (Exception e) {
+            this.logger.log("Can't parse json from: " + path);
+            //e.printStackTrace();
+            return new JSONArray();
+        }
+        return root;
+    }
+
     @SuppressWarnings("UnusedReturnValue")
     public boolean writeJsonToFile(String path, JSONObject obj) {
         this.logger.log("Writing data to file " + path);

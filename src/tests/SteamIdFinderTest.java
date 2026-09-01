@@ -43,7 +43,7 @@ public class SteamIdFinderTest {
         latch.await();
         Game processedGame = state.getGames().get(0);
         assertEquals(15,processedGame.getFoundSteamGames().size(),"No steam ids were found");
-        assertEquals(844020,processedGame.getSelectedSteamGame().getAppId(),"No steam id was set");
+        assertEquals(204490,processedGame.getSelectedSteamGame().getAppId(),"No steam id was set");
     }
 
     @Test

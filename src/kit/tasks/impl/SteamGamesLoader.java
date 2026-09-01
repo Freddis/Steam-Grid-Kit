@@ -26,7 +26,7 @@ public class SteamGamesLoader implements ITask {
 
     public SteamGamesLoader(ILogger logger, JSONObject config) {
         this.logger = logger;
-        String url = "http://api.steampowered.com/ISteamApps/GetAppList/v0002/?format=json";
+        String url = "https://raw.githubusercontent.com/Austrum-lab/steam-appdb/master/data/game.json";
         tempLocation = new File(Config.getJarPath(), "tmp.json");
         loader = new FileLoader(url, tempLocation, 1024 * 5, 5.4);
         this.useCache = config.optBoolean(Config.Keys.USE_CACHE.getKey(), false);
@@ -46,21 +46,12 @@ public class SteamGamesLoader implements ITask {
 
     public void checkResult(boolean status, Consumer<Boolean> finishCallback) {
         JsonHelper jsonHelper = new JsonHelper(logger);
-
-        JSONObject json = jsonHelper.readJsonFromFile(tempLocation.getAbsolutePath());
         if (!status) {
             logger.log("Could't get response from Steam API");
             finishCallback.accept(false);
             return;
         }
-
-        if (!json.has("applist") || !json.optJSONObject("applist").has("apps")) {
-            logger.log("Seems like json is malformed");
-            finishCallback.accept(false);
-            return;
-        }
-
-        JSONArray apps = json.getJSONObject("applist").getJSONArray("apps");
+        JSONArray apps = jsonHelper.readJsonArray(tempLocation.getAbsolutePath());
         logger.log("Loaded " + apps.length() + " game ids");
         if (apps.length() <= 0) {
             logger.log("Something went wrong");

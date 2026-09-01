@@ -30,8 +30,8 @@ public class SteamIdFinder extends GameTask {
     public void start(State state, Consumer<Double> tickCallback) {
         logger.log("Preparing to find steam ids");
         logger.log("Reading steam json file");
-        JSONObject json = helper.readJsonFromFile(Config.getSteamLibraryJsonFilePath());
-        if(json.isEmpty())
+        JSONArray list = helper.readJsonArray(Config.getSteamLibraryJsonFilePath());
+        if(list.isEmpty())
         {
             logger.log("No stream shop library, exiting");
             finishCallback.accept(false);
@@ -39,7 +39,6 @@ public class SteamIdFinder extends GameTask {
         }
 
         logger.log("Creating object representation");
-        JSONArray list = json.optJSONObject("applist").optJSONArray("apps");
         steamLibrary = new ArrayList<>(list.length());
         for(int i =0; i < list.length(); i++) {
             JSONObject row = list.getJSONObject(i);
